@@ -209,10 +209,18 @@ function AdminProductsPage() {
     saveProducts(products.map((product) => product.id === productId ? { ...product, available: !product.available } : product))
   }
 
-  function handleDelete() {
-    if (!editingId || !window.confirm('Bạn có chắc muốn xóa món này?')) return
-    saveProducts(products.filter((product) => product.id !== editingId))
-    closeModal()
+  function handleDelete(productId = editingId, productName = '') {
+    if (!productId) return
+
+    const product = products.find((item) => item.id === productId)
+    const name = productName || product?.name || 'món này'
+    const confirmed = window.confirm(`Bạn có chắc muốn xóa “${name}”?`)
+
+    if (!confirmed) return
+
+    saveProducts(products.filter((item) => item.id !== productId))
+
+    if (productId === editingId) closeModal()
   }
 
   function handleLogout() {
@@ -250,15 +258,33 @@ function AdminProductsPage() {
           </div>
 
           <section className="admin-menu-table">
-            <div className="admin-menu-row admin-menu-header"><span>Ảnh</span><span>Tên sản phẩm</span><span>Danh mục</span><span>Giá bán</span><span>Hiển thị</span><span>Thao tác</span></div>
+            <div className="admin-menu-row admin-menu-header"><span>Ảnh</span><span>Tên sản phẩm</span><span>Danh mục</span><span>Giá bán</span><span>Trạng thái</span><span>Thao tác</span></div>
             {filteredProducts.map((product) => (
               <div className="admin-menu-row" key={product.id}>
                 <span className="admin-product-thumbnail">{product.image ? <img src={product.image} alt={product.name} /> : '☕'}</span>
                 <span className="admin-menu-product"><strong>{product.name}</strong><small>{product.productCode || `M-${String(product.id).slice(-3)}`}</small></span>
                 <span>{product.category}</span>
                 <strong>{formatPrice(product.price)}</strong>
-                <button className={product.available ? 'admin-available' : 'admin-unavailable'} type="button" onClick={() => handleToggleAvailability(product.id)}>{product.available ? 'Đang bán' : 'Tạm ẩn'}</button>
-                <button className="admin-menu-edit-button" type="button" onClick={() => handleEdit(product)}>Chỉnh sửa</button>
+                <span className={product.available ? 'admin-menu-status active' : 'admin-menu-status inactive'}>{product.available ? 'Đang bán' : 'Tạm ẩn'}</span>
+                <div className="admin-menu-actions">
+                  <button aria-label={`Chỉnh sửa ${product.name}`} title="Chỉnh sửa" type="button" onClick={() => handleEdit(product)}>
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z" />
+                    </svg>
+                  </button>
+                  <button aria-label={`Xóa ${product.name}`} className="delete" title="Xóa" type="button" onClick={() => handleDelete(product.id, product.name)}>
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <path d="M3 6h18" />
+                      <path d="M8 6V4h8v2" />
+                      <path d="M19 6l-1 14H6L5 6" />
+                      <path d="M10 11v5M14 11v5" />
+                    </svg>
+                  </button>
+                  <button aria-checked={product.available} aria-label={product.available ? `Tạm ẩn ${product.name}` : `Hiển thị ${product.name}`} className={product.available ? 'admin-menu-status-switch is-active' : 'admin-menu-status-switch'} role="switch" title={product.available ? 'Tạm ẩn' : 'Hiển thị'} type="button" onClick={() => handleToggleAvailability(product.id)}>
+                    <span aria-hidden="true" />
+                  </button>
+                </div>
               </div>
             ))}
             {!filteredProducts.length && <p className="admin-empty">Chưa có món phù hợp.</p>}
@@ -279,7 +305,7 @@ function AdminProductsPage() {
               <label className="admin-image-upload">ẢNH MÓN<input type="file" accept="image/*" onChange={handleImageChange} />{form.image && <img src={form.image} alt="Xem trước" />}</label>
               <label className="admin-checkbox-label"><input name="available" type="checkbox" checked={form.available} onChange={handleChange} />Hiển thị món đang bán</label>
               {message && <p className="admin-form-message">{message}</p>}
-              <div className="admin-product-modal-actions">{editingId && <button className="admin-delete-button" type="button" onClick={handleDelete}>Xóa món</button>}<button className="admin-primary-button" type="submit">{editingId ? 'Lưu thay đổi' : 'Thêm món'}</button></div>
+              <div className="admin-product-modal-actions">{editingId && <button className="admin-delete-button" type="button" onClick={() => handleDelete()}>Xóa món</button>}<button className="admin-primary-button" type="submit">{editingId ? 'Lưu thay đổi' : 'Thêm món'}</button></div>
             </form>
           </section>
         </div>
