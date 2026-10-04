@@ -3,6 +3,21 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { getCurrentUser, logoutUser } from '../../services/authService'
 
 const VOUCHERS_KEY = 'blossom-vouchers'
+const ITEMS_PER_PAGE = 8
+
+function ListFooter({ currentPage, itemLabel, onPageChange, totalItems, totalPages }) {
+  const buttonStyle = { background: '#fff', border: '1px solid #dfcfc3', color: '#765747', height: '32px', width: '32px' }
+  return (
+    <div style={{ alignItems: 'center', borderTop: '1px solid #eadfd5', display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', minHeight: '58px', padding: '0 18px' }}>
+      <span style={{ color: '#806858', fontSize: '13px' }}>Tổng số {itemLabel}: <strong style={{ color: '#50382c' }}>{totalItems}</strong></span>
+      <div style={{ alignItems: 'center', display: 'flex', gap: '8px' }}>
+        <button aria-label="Trang trước" disabled={currentPage === 1} onClick={() => onPageChange(Math.max(1, currentPage - 1))} style={{ ...buttonStyle, cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }} type="button">{'<'}</button>
+        <span style={{ color: '#806858', fontSize: '13px' }}>Trang {currentPage} / {totalPages}</span>
+        <button aria-label="Trang sau" disabled={currentPage === totalPages} onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} style={{ ...buttonStyle, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }} type="button">{'>'}</button>
+      </div>
+    </div>
+  )
+}
 
 const defaultVouchers = [
   {
@@ -162,6 +177,7 @@ function AdminVouchersPage() {
   const [vouchers, setVouchers] = useState(getVouchers)
   const [filter, setFilter] = useState('all')
   const [keyword, setKeyword] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(emptyForm)
   const [message, setMessage] = useState('')
@@ -185,6 +201,16 @@ function AdminVouchersPage() {
       return matchedFilter && matchedKeyword
     })
   }, [filter, keyword, vouchers])
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredVouchers.length / ITEMS_PER_PAGE),
+  )
+  const activePage = Math.min(currentPage, totalPages)
+  const paginatedVouchers = filteredVouchers.slice(
+    (activePage - 1) * ITEMS_PER_PAGE,
+    activePage * ITEMS_PER_PAGE,
+  )
 
   if (!user || user.role !== 'admin') {
     return <Navigate to="/login" replace />
@@ -479,13 +505,19 @@ function AdminVouchersPage() {
           <div className="admin-voucher-toolbar">
             <input
               value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
+              onChange={(event) => {
+                setKeyword(event.target.value)
+                setCurrentPage(1)
+              }}
               placeholder="Tìm mã hoặc tên voucher..."
             />
 
             <select
               value={filter}
-              onChange={(event) => setFilter(event.target.value)}
+              onChange={(event) => {
+                setFilter(event.target.value)
+                setCurrentPage(1)
+              }}
             >
               <option value="all">Tất cả voucher</option>
               <option value="active">Đang hoạt động</option>
@@ -506,7 +538,7 @@ function AdminVouchersPage() {
                 <span>Thao tác</span>
               </div>
 
-              {filteredVouchers.map((voucher) => {
+              {paginatedVouchers.map((voucher) => {
                 const status = getStatus(voucher)
 
                 return (
@@ -581,6 +613,7 @@ function AdminVouchersPage() {
               {filteredVouchers.length === 0 && (
                 <p className="admin-empty">Chưa có voucher phù hợp.</p>
               )}
+              <ListFooter currentPage={activePage} itemLabel="voucher" onPageChange={setCurrentPage} totalItems={vouchers.length} totalPages={totalPages} />
             </section>
 
             {isFormOpen && (

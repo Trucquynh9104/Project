@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import {
+  addLoyaltyMember,
   getCurrentUser,
   getLoyaltyMembers,
   logoutUser,
   updateMemberPoints,
 } from '../../services/authService'
+
+const MEMBERS_PER_PAGE = 8
 
 function getOrders() {
   try {
@@ -16,8 +19,11 @@ function getOrders() {
 }
 
 function getRank(points) {
-  if (Number(points || 0) >= 1000) return 'Gold'
-  return 'Silver'
+  const totalPoints = Number(points || 0)
+
+  if (totalPoints > 100) return 'Gold'
+  if (totalPoints >= 50) return 'Silver'
+  return 'Member'
 }
 
 function getMemberCode(member) {
@@ -38,15 +44,26 @@ function formatDate(value) {
   }).format(date)
 }
 
+function getEmptyMemberForm() {
+  return {
+    name: '',
+    phone: '',
+  }
+}
+
 function AdminMembersPage() {
   const navigate = useNavigate()
   const user = getCurrentUser()
   const [members, setMembers] = useState(() => getLoyaltyMembers())
   const [keyword, setKeyword] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
   const [selectedMember, setSelectedMember] = useState(null)
   const [pointsInput, setPointsInput] = useState('')
   const [message, setMessage] = useState('')
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
+  const [memberForm, setMemberForm] = useState(getEmptyMemberForm)
+  const [addMemberMessage, setAddMemberMessage] = useState('')
 
   const orders = useMemo(getOrders, [])
 
@@ -86,12 +103,23 @@ function AdminMembersPage() {
           .join(' ')
           .toLowerCase()
           .includes(normalizedKeyword)
+
       const matchedType =
         typeFilter === 'all' || member.memberType === typeFilter
 
       return matchedKeyword && matchedType
     })
   }, [keyword, memberRows, typeFilter])
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredMembers.length / MEMBERS_PER_PAGE),
+  )
+  const activePage = Math.min(currentPage, totalPages)
+  const paginatedMembers = filteredMembers.slice(
+    (activePage - 1) * MEMBERS_PER_PAGE,
+    activePage * MEMBERS_PER_PAGE,
+  )
 
   if (!user || user.role !== 'admin') {
     return <Navigate to="/login" replace />
@@ -146,6 +174,40 @@ function AdminMembersPage() {
 
     setMembers(getLoyaltyMembers())
     closeMember()
+  }
+
+  function openAddMember() {
+    setMemberForm(getEmptyMemberForm())
+    setAddMemberMessage('')
+    setIsAddMemberOpen(true)
+  }
+
+  function closeAddMember() {
+    setIsAddMemberOpen(false)
+    setMemberForm(getEmptyMemberForm())
+    setAddMemberMessage('')
+  }
+
+  function handleMemberFormChange(event) {
+    const { name, value } = event.target
+
+    setMemberForm((current) => ({ ...current, [name]: value }))
+    setAddMemberMessage('')
+  }
+
+  function handleAddMember(event) {
+    event.preventDefault()
+
+    const result = addLoyaltyMember(memberForm)
+
+    if (!result.ok) {
+      setAddMemberMessage(result.message || 'Không thể thêm thành viên.')
+      return
+    }
+
+    setMembers(getLoyaltyMembers())
+    setCurrentPage(1)
+    closeAddMember()
   }
 
   return (
@@ -203,21 +265,34 @@ function AdminMembersPage() {
               <p>Tra cứu lịch sử mua hàng và quản lý điểm thành viên.</p>
             </div>
 
-            <span className="admin-members-count">
-              {memberRows.length} thành viên
-            </span>
+            <div className="admin-members-heading-actions">
+              <button
+                className="admin-primary-button"
+                type="button"
+                onClick={openAddMember}
+                style={{ marginTop: 0, width: '168px' }}
+              >
+                ＋ Thêm thành viên
+              </button>
+            </div>
           </div>
 
           <div className="admin-members-toolbar">
             <input
               value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
+              onChange={(event) => {
+                setKeyword(event.target.value)
+                setCurrentPage(1)
+              }}
               placeholder="Tìm mã thành viên, tên, số điện thoại..."
             />
 
             <select
               value={typeFilter}
-              onChange={(event) => setTypeFilter(event.target.value)}
+              onChange={(event) => {
+                setTypeFilter(event.target.value)
+                setCurrentPage(1)
+              }}
             >
               <option value="all">Tất cả thành viên</option>
               <option value="account">Có tài khoản</option>
@@ -235,7 +310,7 @@ function AdminMembersPage() {
               <span>Thao tác</span>
             </div>
 
-            {filteredMembers.map((member) => (
+            {paginatedMembers.map((member) => (
               <div className="admin-members-row-figma" key={member.id}>
                 <span className="admin-member-cell">
                   <strong>{member.name}</strong>
@@ -247,11 +322,17 @@ function AdminMembersPage() {
                   <small>{member.email || 'Tích điểm tại quầy'}</small>
                 </span>
 
-                <span className={`admin-member-rank ${getRank(member.points).toLowerCase()}`}>
+                <span
+                  className={`admin-member-rank ${getRank(
+                    member.points,
+                  ).toLowerCase()}`}
+                >
                   {getRank(member.points)}
                 </span>
 
-                <strong>{Number(member.points || 0).toLocaleString('vi-VN')} điểm</strong>
+                <strong>
+                  {Number(member.points || 0).toLocaleString('vi-VN')} điểm
+                </strong>
                 <span>{member.orderCount} đơn</span>
 
                 <button
@@ -267,6 +348,60 @@ function AdminMembersPage() {
             {!filteredMembers.length && (
               <p className="admin-empty">Không tìm thấy thành viên phù hợp.</p>
             )}
+
+            <div
+              style={{
+                alignItems: 'center',
+                borderTop: '1px solid #eadfd5',
+                display: 'flex',
+                justifyContent: 'space-between',
+                minHeight: '58px',
+                padding: '0 18px',
+              }}
+            >
+              <span style={{ color: '#806858', fontSize: '13px' }}>
+                Tổng số thành viên:{' '}
+                <strong style={{ color: '#50382c' }}>
+                  {memberRows.length}
+                </strong>
+              </span>
+
+              <div
+                style={{
+                  alignItems: 'center',
+                  display: 'flex',
+                  gap: '8px',
+                }}
+              >
+                <button
+                  type="button"
+                  aria-label="Trang trước"
+                  disabled={activePage === 1}
+                  onClick={() =>
+                    setCurrentPage((page) => Math.max(1, page - 1))
+                  }
+                >
+                  {'<'}
+                </button>
+
+                <span style={{ color: '#806858', fontSize: '13px' }}>
+                  Trang {activePage} / {totalPages}
+                </span>
+
+                <button
+                  type="button"
+                  aria-label="Trang sau"
+                  disabled={activePage === totalPages}
+                  onClick={() =>
+                    setCurrentPage((page) =>
+                      Math.min(totalPages, page + 1),
+                    )
+                  }
+                >
+                  {'>'}
+                </button>
+              </div>
+            </div>
           </section>
         </section>
       </main>
@@ -288,14 +423,29 @@ function AdminMembersPage() {
             <p className="admin-eyebrow">Member profile</p>
             <h2>{selectedMember.name}</h2>
             <p className="admin-member-modal-code">
-              {getMemberCode(selectedMember)} · {getRank(selectedMember.points)} member
+              {getMemberCode(selectedMember)} ·{' '}
+              {getRank(selectedMember.points)} member
             </p>
 
             <div className="admin-member-profile-grid">
-              <p><span>Số điện thoại</span><strong>{selectedMember.phone}</strong></p>
-              <p><span>Email</span><strong>{selectedMember.email || 'Chưa có tài khoản'}</strong></p>
-              <p><span>Đơn đã hoàn tất</span><strong>{selectedMember.completedOrderCount} đơn</strong></p>
-              <p><span>Ngày tham gia</span><strong>{formatDate(selectedMember.createdAt)}</strong></p>
+              <p>
+                <span>Số điện thoại</span>
+                <strong>{selectedMember.phone}</strong>
+              </p>
+              <p>
+                <span>Email</span>
+                <strong>
+                  {selectedMember.email || 'Chưa có tài khoản'}
+                </strong>
+              </p>
+              <p>
+                <span>Đơn đã hoàn tất</span>
+                <strong>{selectedMember.completedOrderCount} đơn</strong>
+              </p>
+              <p>
+                <span>Ngày tham gia</span>
+                <strong>{formatDate(selectedMember.createdAt)}</strong>
+              </p>
             </div>
 
             <label className="admin-member-points-input">
@@ -311,9 +461,89 @@ function AdminMembersPage() {
             {message && <p className="admin-form-message">{message}</p>}
 
             <div className="admin-member-modal-actions">
-              <button className="admin-cancel-button" type="button" onClick={closeMember}>Hủy</button>
-              <button className="admin-primary-button" type="button" onClick={savePoints}>Lưu điểm</button>
+              <button
+                className="admin-cancel-button"
+                type="button"
+                onClick={closeMember}
+              >
+                Hủy
+              </button>
+              <button
+                className="admin-primary-button"
+                type="button"
+                onClick={savePoints}
+              >
+                Lưu điểm
+              </button>
             </div>
+          </section>
+        </div>
+      )}
+
+      {isAddMemberOpen && (
+        <div className="admin-modal-overlay" onClick={closeAddMember}>
+          <section
+            className="admin-member-modal-figma admin-add-member-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              className="admin-modal-close"
+              type="button"
+              onClick={closeAddMember}
+            >
+              ×
+            </button>
+
+            <p className="admin-eyebrow">New member</p>
+            <h2>Thêm thành viên</h2>
+            <p className="admin-add-member-description">
+              Tạo hồ sơ tích điểm tại quầy. Thành viên mới sẽ có 0 điểm.
+            </p>
+
+            <form
+              className="admin-add-member-form"
+              onSubmit={handleAddMember}
+              noValidate
+            >
+              <label>
+                HỌ VÀ TÊN
+                <input
+                  name="name"
+                  value={memberForm.name}
+                  onChange={handleMemberFormChange}
+                  placeholder="Ví dụ: Nguyễn Minh Anh"
+                  autoFocus
+                />
+              </label>
+
+              <label>
+                SỐ ĐIỆN THOẠI
+                <input
+                  name="phone"
+                  inputMode="numeric"
+                  value={memberForm.phone}
+                  onChange={handleMemberFormChange}
+                  placeholder="Ví dụ: 0901 234 567"
+                />
+              </label>
+
+              {addMemberMessage && (
+                <p className="admin-form-message">{addMemberMessage}</p>
+              )}
+
+              <div className="admin-member-modal-actions">
+                <button
+                  className="admin-cancel-button"
+                  type="button"
+                  onClick={closeAddMember}
+                >
+                  Hủy
+                </button>
+                <button className="admin-primary-button" type="submit">
+                  Thêm thành viên
+                </button>
+              </div>
+            </form>
           </section>
         </div>
       )}

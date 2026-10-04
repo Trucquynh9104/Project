@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import AdminListFooter from '../../components/AdminListFooter'
 import {
   addMemberPoints,
   getCurrentUser,
@@ -13,6 +14,7 @@ const statusFilters = [
   { value: 'Hoàn tất', label: 'Hoàn tất' },
   { value: 'Đã hủy', label: 'Đã hủy' },
 ]
+const ITEMS_PER_PAGE = 8
 
 function getOrders() {
   try {
@@ -73,6 +75,7 @@ function AdminOrdersPage() {
   const [keyword, setKeyword] = useState('')
   const [dateFilter, setDateFilter] = useState('today')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
   const [selectedOrder, setSelectedOrder] = useState(null)
 
   const filteredOrders = useMemo(() => {
@@ -90,6 +93,16 @@ function AdminOrdersPage() {
       })
       .sort((first, second) => new Date(second.createdAt || 0) - new Date(first.createdAt || 0))
   }, [dateFilter, keyword, orders, statusFilter])
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredOrders.length / ITEMS_PER_PAGE),
+  )
+  const activePage = Math.min(currentPage, totalPages)
+  const paginatedOrders = filteredOrders.slice(
+    (activePage - 1) * ITEMS_PER_PAGE,
+    activePage * ITEMS_PER_PAGE,
+  )
 
   useEffect(() => {
     const orderId = searchParams.get('order')
@@ -218,16 +231,16 @@ function AdminOrdersPage() {
           </div>
 
           <div className="admin-orders-toolbar">
-            <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Tìm theo mã đơn, khách hàng..." />
+            <input value={keyword} onChange={(event) => { setKeyword(event.target.value); setCurrentPage(1) }} placeholder="Tìm theo mã đơn, khách hàng..." />
             <div>
-              <select value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}><option value="today">Hôm nay</option><option value="7days">7 ngày gần đây</option><option value="all">Tất cả thời gian</option></select>
-              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>{statusFilters.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
+              <select value={dateFilter} onChange={(event) => { setDateFilter(event.target.value); setCurrentPage(1) }}><option value="today">Hôm nay</option><option value="7days">7 ngày gần đây</option><option value="all">Tất cả thời gian</option></select>
+              <select value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setCurrentPage(1) }}>{statusFilters.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
             </div>
           </div>
 
           <section className="admin-orders-table-figma">
             <div className="admin-orders-row-figma admin-orders-header-figma"><span>Mã đơn</span><span>Khách hàng</span><span>Kênh bán</span><span>Tổng tiền</span><span>Trạng thái</span><span>Thao tác</span></div>
-            {filteredOrders.map((order) => (
+            {paginatedOrders.map((order) => (
               <div className="admin-orders-row-figma" key={order.id}>
                 <strong>{order.id}</strong>
                 <span className="admin-order-customer"><strong>{order.receiver || order.member?.name || 'Khách vãng lai'}</strong><small>{order.product || '—'} · {formatDateTime(order.createdAt || order.time)}</small></span>
@@ -240,6 +253,7 @@ function AdminOrdersPage() {
               </div>
             ))}
             {!filteredOrders.length && <p className="admin-empty">Chưa có đơn hàng phù hợp.</p>}
+            <AdminListFooter currentPage={activePage} itemLabel="đơn hàng" onPageChange={setCurrentPage} totalItems={orders.length} totalPages={totalPages} />
           </section>
         </section>
       </main>

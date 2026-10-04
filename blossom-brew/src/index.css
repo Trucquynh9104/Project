@@ -6378,3 +6378,278 @@ h2 {
   outline: 2px solid #b9876c;
   outline-offset: 2px;
 }
+
+/* Menu và Tài khoản thu ngân: icon thao tác nhỏ, đồng bộ 3 nút */
+.admin-menu-page .admin-menu-row {
+  grid-template-columns: 58px minmax(190px, 1.55fr) 0.85fr 0.8fr 0.72fr 128px;
+}
+
+.admin-menu-page .admin-menu-actions,
+.admin-cashiers-page .admin-cashier-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.admin-menu-page .admin-menu-actions > button,
+.admin-cashiers-page .admin-cashier-actions > button {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  color: #77503d;
+  background: #f8f1ec;
+  border: 1px solid #ead9ca;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease,
+    color 160ms ease, transform 160ms ease;
+}
+
+.admin-menu-page .admin-menu-actions > button:hover,
+.admin-cashiers-page .admin-cashier-actions > button:hover {
+  color: #fff;
+  background: #76503e;
+  border-color: #76503e;
+  transform: translateY(-1px);
+}
+
+.admin-menu-page .admin-menu-actions > button.delete,
+.admin-cashiers-page .admin-cashier-actions > button.delete {
+  color: #a8664a;
+  background: #fcf1eb;
+}
+
+.admin-menu-page .admin-menu-actions > button.delete:hover,
+.admin-cashiers-page .admin-cashier-actions > button.delete:hover {
+  color: #fff;
+  background: #a8664a;
+  border-color: #a8664a;
+}
+
+.admin-menu-page .admin-menu-actions svg,
+.admin-cashiers-page .admin-cashier-actions svg {
+  width: 14px;
+  height: 14px;
+}
+
+.admin-menu-page .admin-menu-actions > .admin-menu-status-switch,
+.admin-cashiers-page .admin-cashier-actions > .admin-status-switch {
+  display: inline-flex;
+  align-items: center;
+  width: 36px;
+  height: 20px;
+  padding: 3px;
+  background: #d9c9bf;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.admin-menu-page .admin-menu-actions .admin-menu-status-switch span,
+.admin-cashiers-page .admin-cashier-actions .admin-status-switch span {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(71, 44, 33, 0.25);
+  transform: translateX(0);
+  transition: transform 160ms ease;
+}
+
+.admin-menu-page .admin-menu-actions > .admin-menu-status-switch.is-active,
+.admin-cashiers-page .admin-cashier-actions > .admin-status-switch.is-active {
+  background: #5f8660;
+}
+
+.admin-menu-page .admin-menu-actions .admin-menu-status-switch.is-active span,
+.admin-cashiers-page .admin-cashier-actions .admin-status-switch.is-active span {
+  transform: translateX(16px);
+}
+
+.admin-menu-page .admin-menu-actions > .admin-menu-status-switch:hover,
+.admin-menu-page .admin-menu-actions > .admin-menu-status-switch.is-active:hover,
+.admin-cashiers-page .admin-cashier-actions > .admin-status-switch:hover,
+.admin-cashiers-page .admin-cashier-actions > .admin-status-switch.is-active:hover {
+  background: #4b6e4d;
+  border-color: transparent;
+  transform: none;
+}
+
+.admin-cashiers-page .admin-cashiers-row {
+  grid-template-columns: 1.05fr 1.5fr 0.78fr 0.86fr 0.82fr 128px;
+}
+/* Dán block này xuống cuối src/index.css */
+.admin-members-page .admin-members-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-members-page .admin-add-member-modal {
+  width: min(460px, calc(100vw - 32px));
+}
+
+.admin-members-page .admin-add-member-description {
+  margin: 0 0 22px;
+  color: #9b8170;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.admin-members-page .admin-add-member-form {
+  display: grid;
+  gap: 15px;
+}
+
+.admin-members-page .admin-add-member-form label {
+  display: grid;
+  gap: 7px;
+  color: #806858;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.admin-members-page .admin-add-member-form input {
+  border: 1px solid #dfcfc3;
+  color: #50382c;
+  font: 14px 'Poppins', Arial, sans-serif;
+  padding: 12px;
+}
+
+.admin-members-page .admin-add-member-form input:focus {
+  border-color: #a9785d;
+  outline: 0;
+}
+
+@media (max-width: 700px) {
+  .admin-members-page .admin-members-heading-actions {
+    align-items: stretch;
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .admin-members-page .admin-members-heading-actions .admin-primary-button {
+    width: 100%;
+  }
+}
+.admin-members-page .admin-members-count {
+  flex: 0 0 auto;
+  min-width: max-content;
+  white-space: nowrap;
+}
+/* Dán block này xuống cuối src/index.css */
+.admin-members-page .admin-members-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-members-page .admin-add-member-modal {
+  width: min(460px, calc(100vw - 32px));
+}
+
+.admin-members-page .admin-add-member-description {
+  margin: 0 0 22px;
+  color: #9b8170;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.admin-members-page .admin-add-member-form {
+  display: grid;
+  gap: 15px;
+}
+
+.admin-members-page .admin-add-member-form label {
+  display: grid;
+  gap: 7px;
+  color: #806858;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.admin-members-page .admin-add-member-form input {
+  border: 1px solid #dfcfc3;
+  color: #50382c;
+  font: 14px 'Poppins', Arial, sans-serif;
+  padding: 12px;
+}
+
+.admin-members-page .admin-add-member-form input:focus {
+  border-color: #a9785d;
+  outline: 0;
+}
+
+@media (max-width: 700px) {
+  .admin-members-page .admin-members-heading-actions {
+    align-items: stretch;
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .admin-members-page .admin-members-heading-actions .admin-primary-button {
+    width: 100%;
+  }
+}
+/* Dán block này xuống cuối src/index.css */
+.admin-members-page .admin-members-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-members-page .admin-add-member-modal {
+  width: min(460px, calc(100vw - 32px));
+}
+
+.admin-members-page .admin-add-member-description {
+  margin: 0 0 22px;
+  color: #9b8170;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.admin-members-page .admin-add-member-form {
+  display: grid;
+  gap: 15px;
+}
+
+.admin-members-page .admin-add-member-form label {
+  display: grid;
+  gap: 7px;
+  color: #806858;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.admin-members-page .admin-add-member-form input {
+  border: 1px solid #dfcfc3;
+  color: #50382c;
+  font: 14px 'Poppins', Arial, sans-serif;
+  padding: 12px;
+}
+
+.admin-members-page .admin-add-member-form input:focus {
+  border-color: #a9785d;
+  outline: 0;
+}
+
+@media (max-width: 700px) {
+  .admin-members-page .admin-members-heading-actions {
+    align-items: stretch;
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .admin-members-page .admin-members-heading-actions .admin-primary-button {
+    width: 100%;
+  }
+}

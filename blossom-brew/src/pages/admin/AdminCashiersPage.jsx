@@ -3,6 +3,77 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { getCurrentUser, logoutUser } from '../../services/authService'
 
 const USERS_KEY = 'blossom-brew-users'
+const ITEMS_PER_PAGE = 8
+
+function ListFooter({
+  currentPage,
+  itemLabel,
+  onPageChange,
+  totalItems,
+  totalPages,
+}) {
+  const buttonStyle = {
+    background: '#fff',
+    border: '1px solid #dfcfc3',
+    color: '#765747',
+    height: '32px',
+    width: '32px',
+  }
+
+  return (
+    <div
+      style={{
+        alignItems: 'center',
+        borderTop: '1px solid #eadfd5',
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '12px',
+        justifyContent: 'space-between',
+        minHeight: '58px',
+        padding: '0 18px',
+      }}
+    >
+      <span style={{ color: '#806858', fontSize: '13px' }}>
+        Tổng số {itemLabel}:{' '}
+        <strong style={{ color: '#50382c' }}>{totalItems}</strong>
+      </span>
+
+      <div style={{ alignItems: 'center', display: 'flex', gap: '8px' }}>
+        <button
+          aria-label="Trang trước"
+          disabled={currentPage === 1}
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          style={{
+            ...buttonStyle,
+            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+            opacity: currentPage === 1 ? 0.4 : 1,
+          }}
+          type="button"
+        >
+          {'<'}
+        </button>
+
+        <span style={{ color: '#806858', fontSize: '13px' }}>
+          Trang {currentPage} / {totalPages}
+        </span>
+
+        <button
+          aria-label="Trang sau"
+          disabled={currentPage === totalPages}
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          style={{
+            ...buttonStyle,
+            cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+            opacity: currentPage === totalPages ? 0.4 : 1,
+          }}
+          type="button"
+        >
+          {'>'}
+        </button>
+      </div>
+    </div>
+  )
+}
 
 function getUsers() {
   try {
@@ -22,7 +93,9 @@ function getOrders() {
 
 function formatDate(value) {
   if (!value) return '—'
+
   const date = new Date(value)
+
   if (Number.isNaN(date.getTime())) return String(value)
 
   return new Intl.DateTimeFormat('vi-VN', {
@@ -45,15 +118,18 @@ function emptyForm() {
 function AdminCashiersPage() {
   const navigate = useNavigate()
   const user = getCurrentUser()
+
   const [users, setUsers] = useState(getUsers)
   const [keyword, setKeyword] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [message, setMessage] = useState('')
 
   const orders = useMemo(getOrders, [])
+
   const cashiers = useMemo(
     () => users.filter((account) => account.role === 'cashier'),
     [users],
@@ -72,6 +148,7 @@ function AdminCashiersPage() {
           .includes(normalizedKeyword)
 
       const isActive = cashier.active !== false
+
       const matchedStatus =
         statusFilter === 'all' ||
         (statusFilter === 'active' ? isActive : !isActive)
@@ -79,6 +156,18 @@ function AdminCashiersPage() {
       return matchedKeyword && matchedStatus
     })
   }, [cashiers, keyword, statusFilter])
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredCashiers.length / ITEMS_PER_PAGE),
+  )
+
+  const activePage = Math.min(currentPage, totalPages)
+
+  const paginatedCashiers = filteredCashiers.slice(
+    (activePage - 1) * ITEMS_PER_PAGE,
+    activePage * ITEMS_PER_PAGE,
+  )
 
   if (!user || user.role !== 'admin') {
     return <Navigate to="/login" replace />
@@ -140,6 +229,7 @@ function AdminCashiersPage() {
       password: '',
       active: cashier.active !== false,
     })
+
     setEditingId(cashier.id)
     setMessage('')
     setIsModalOpen(true)
@@ -152,11 +242,13 @@ function AdminCashiersPage() {
       ...current,
       [name]: type === 'checkbox' ? checked : value,
     }))
+
     setMessage('')
   }
 
   function handleSubmit(event) {
     event.preventDefault()
+
     const normalizedEmail = form.email.trim().toLowerCase()
 
     if (!form.name.trim() || !normalizedEmail) {
@@ -224,6 +316,16 @@ function AdminCashiersPage() {
     )
   }
 
+  function handleDelete(cashier) {
+    const confirmed = window.confirm(
+      `Bạn có chắc muốn xóa tài khoản thu ngân “${cashier.name}”?`,
+    )
+
+    if (!confirmed) return
+
+    saveUsers(users.filter((account) => account.id !== cashier.id))
+  }
+
   return (
     <div className="admin-dashboard admin-cashiers-page">
       <aside className="admin-sidebar">
@@ -256,10 +358,12 @@ function AdminCashiersPage() {
 
         <div className="admin-profile">
           <span className="admin-avatar">{initials}</span>
+
           <div>
             <strong>{user.name}</strong>
             <small>Administrator</small>
           </div>
+
           <button type="button" onClick={handleLogout}>
             Đăng xuất
           </button>
@@ -292,13 +396,19 @@ function AdminCashiersPage() {
           <div className="admin-cashiers-toolbar">
             <input
               value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
+              onChange={(event) => {
+                setKeyword(event.target.value)
+                setCurrentPage(1)
+              }}
               placeholder="Tìm tên, email hoặc số điện thoại..."
             />
 
             <select
               value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
+              onChange={(event) => {
+                setStatusFilter(event.target.value)
+                setCurrentPage(1)
+              }}
             >
               <option value="all">Tất cả trạng thái</option>
               <option value="active">Đang hoạt động</option>
@@ -316,10 +426,11 @@ function AdminCashiersPage() {
               <span>Thao tác</span>
             </div>
 
-            {filteredCashiers.map((cashier) => {
+            {paginatedCashiers.map((cashier) => {
               const cashierOrderCount = orders.filter(
                 (order) => order.cashierId === cashier.id,
               ).length
+
               const isActive = cashier.active !== false
 
               return (
@@ -367,39 +478,44 @@ function AdminCashiersPage() {
                     </button>
 
                     <button
+                      aria-label={`Xóa tài khoản ${cashier.name}`}
+                      className="delete"
+                      title="Xóa tài khoản"
+                      type="button"
+                      onClick={() => handleDelete(cashier)}
+                    >
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                      >
+                        <path d="M3 6h18" />
+                        <path d="M8 6V4h8v2" />
+                        <path d="M19 6l-1 14H6L5 6" />
+                        <path d="M10 11v5M14 11v5" />
+                      </svg>
+                    </button>
+
+                    <button
+                      aria-checked={isActive}
                       aria-label={
                         isActive
-                          ? `Tạm ngưng tài khoản ${cashier.name}`
+                          ? `Hủy kích hoạt tài khoản ${cashier.name}`
                           : `Kích hoạt tài khoản ${cashier.name}`
                       }
                       className={
                         isActive
-                          ? 'toggle-status'
-                          : 'toggle-status activate'
+                          ? 'admin-status-switch is-active'
+                          : 'admin-status-switch'
                       }
-                      title={isActive ? 'Tạm ngưng' : 'Kích hoạt'}
+                      role="switch"
+                      title={isActive ? 'Hủy kích hoạt' : 'Kích hoạt'}
                       type="button"
                       onClick={() => toggleStatus(cashier)}
                     >
-                      {isActive ? (
-                        <svg
-                          aria-hidden="true"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path d="M8 5v14M16 5v14" />
-                        </svg>
-                      ) : (
-                        <svg
-                          aria-hidden="true"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="m8 5 11 7-11 7Z" />
-                        </svg>
-                      )}
+                      <span aria-hidden="true" />
                     </button>
                   </span>
                 </div>
@@ -411,6 +527,14 @@ function AdminCashiersPage() {
                 Chưa có tài khoản thu ngân phù hợp.
               </p>
             )}
+
+            <ListFooter
+              currentPage={activePage}
+              itemLabel="thu ngân"
+              onPageChange={setCurrentPage}
+              totalItems={cashiers.length}
+              totalPages={totalPages}
+            />
           </section>
         </section>
       </main>
@@ -432,6 +556,7 @@ function AdminCashiersPage() {
             <p className="admin-eyebrow">
               {editingId ? 'Edit cashier' : 'New cashier'}
             </p>
+
             <h2>
               {editingId ? 'Cập nhật thu ngân' : 'Tạo tài khoản thu ngân'}
             </h2>
