@@ -10,6 +10,20 @@ import {
 
 const MEMBERS_PER_PAGE = 8
 
+function ListFooter({ currentPage, itemLabel, onPageChange, totalItems, totalPages }) {
+  const buttonStyle = { background: '#fff', border: '1px solid #dfcfc3', color: '#765747', height: '32px', width: '32px' }
+  return (
+    <div style={{ alignItems: 'center', borderTop: '1px solid #eadfd5', display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', minHeight: '58px', padding: '0 18px' }}>
+      <span style={{ color: '#806858', fontSize: '13px' }}>Tổng số {itemLabel}: <strong style={{ color: '#50382c' }}>{totalItems}</strong></span>
+      <div style={{ alignItems: 'center', display: 'flex', gap: '8px' }}>
+        <button aria-label="Trang trước" disabled={currentPage === 1} onClick={() => onPageChange(Math.max(1, currentPage - 1))} style={{ ...buttonStyle, cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }} type="button">{'<'}</button>
+        <span style={{ color: '#806858', fontSize: '13px' }}>Trang {currentPage} / {totalPages}</span>
+        <button aria-label="Trang sau" disabled={currentPage === totalPages} onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} style={{ ...buttonStyle, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }} type="button">{'>'}</button>
+      </div>
+    </div>
+  )
+}
+
 function getOrders() {
   try {
     return JSON.parse(localStorage.getItem('blossom-orders') || '[]')
@@ -103,7 +117,6 @@ function AdminMembersPage() {
           .join(' ')
           .toLowerCase()
           .includes(normalizedKeyword)
-
       const matchedType =
         typeFilter === 'all' || member.memberType === typeFilter
 
@@ -270,7 +283,6 @@ function AdminMembersPage() {
                 className="admin-primary-button"
                 type="button"
                 onClick={openAddMember}
-                style={{ marginTop: 0, width: '168px' }}
               >
                 ＋ Thêm thành viên
               </button>
@@ -322,17 +334,11 @@ function AdminMembersPage() {
                   <small>{member.email || 'Tích điểm tại quầy'}</small>
                 </span>
 
-                <span
-                  className={`admin-member-rank ${getRank(
-                    member.points,
-                  ).toLowerCase()}`}
-                >
+                <span className={`admin-member-rank ${getRank(member.points).toLowerCase()}`}>
                   {getRank(member.points)}
                 </span>
 
-                <strong>
-                  {Number(member.points || 0).toLocaleString('vi-VN')} điểm
-                </strong>
+                <strong>{Number(member.points || 0).toLocaleString('vi-VN')} điểm</strong>
                 <span>{member.orderCount} đơn</span>
 
                 <button
@@ -348,60 +354,7 @@ function AdminMembersPage() {
             {!filteredMembers.length && (
               <p className="admin-empty">Không tìm thấy thành viên phù hợp.</p>
             )}
-
-            <div
-              style={{
-                alignItems: 'center',
-                borderTop: '1px solid #eadfd5',
-                display: 'flex',
-                justifyContent: 'space-between',
-                minHeight: '58px',
-                padding: '0 18px',
-              }}
-            >
-              <span style={{ color: '#806858', fontSize: '13px' }}>
-                Tổng số thành viên:{' '}
-                <strong style={{ color: '#50382c' }}>
-                  {memberRows.length}
-                </strong>
-              </span>
-
-              <div
-                style={{
-                  alignItems: 'center',
-                  display: 'flex',
-                  gap: '8px',
-                }}
-              >
-                <button
-                  type="button"
-                  aria-label="Trang trước"
-                  disabled={activePage === 1}
-                  onClick={() =>
-                    setCurrentPage((page) => Math.max(1, page - 1))
-                  }
-                >
-                  {'<'}
-                </button>
-
-                <span style={{ color: '#806858', fontSize: '13px' }}>
-                  Trang {activePage} / {totalPages}
-                </span>
-
-                <button
-                  type="button"
-                  aria-label="Trang sau"
-                  disabled={activePage === totalPages}
-                  onClick={() =>
-                    setCurrentPage((page) =>
-                      Math.min(totalPages, page + 1),
-                    )
-                  }
-                >
-                  {'>'}
-                </button>
-              </div>
-            </div>
+            <ListFooter currentPage={activePage} itemLabel="thành viên" onPageChange={setCurrentPage} totalItems={memberRows.length} totalPages={totalPages} />
           </section>
         </section>
       </main>
@@ -423,29 +376,14 @@ function AdminMembersPage() {
             <p className="admin-eyebrow">Member profile</p>
             <h2>{selectedMember.name}</h2>
             <p className="admin-member-modal-code">
-              {getMemberCode(selectedMember)} ·{' '}
-              {getRank(selectedMember.points)} member
+              {getMemberCode(selectedMember)} · {getRank(selectedMember.points)} member
             </p>
 
             <div className="admin-member-profile-grid">
-              <p>
-                <span>Số điện thoại</span>
-                <strong>{selectedMember.phone}</strong>
-              </p>
-              <p>
-                <span>Email</span>
-                <strong>
-                  {selectedMember.email || 'Chưa có tài khoản'}
-                </strong>
-              </p>
-              <p>
-                <span>Đơn đã hoàn tất</span>
-                <strong>{selectedMember.completedOrderCount} đơn</strong>
-              </p>
-              <p>
-                <span>Ngày tham gia</span>
-                <strong>{formatDate(selectedMember.createdAt)}</strong>
-              </p>
+              <p><span>Số điện thoại</span><strong>{selectedMember.phone}</strong></p>
+              <p><span>Email</span><strong>{selectedMember.email || 'Chưa có tài khoản'}</strong></p>
+              <p><span>Đơn đã hoàn tất</span><strong>{selectedMember.completedOrderCount} đơn</strong></p>
+              <p><span>Ngày tham gia</span><strong>{formatDate(selectedMember.createdAt)}</strong></p>
             </div>
 
             <label className="admin-member-points-input">
@@ -461,20 +399,8 @@ function AdminMembersPage() {
             {message && <p className="admin-form-message">{message}</p>}
 
             <div className="admin-member-modal-actions">
-              <button
-                className="admin-cancel-button"
-                type="button"
-                onClick={closeMember}
-              >
-                Hủy
-              </button>
-              <button
-                className="admin-primary-button"
-                type="button"
-                onClick={savePoints}
-              >
-                Lưu điểm
-              </button>
+              <button className="admin-cancel-button" type="button" onClick={closeMember}>Hủy</button>
+              <button className="admin-primary-button" type="button" onClick={savePoints}>Lưu điểm</button>
             </div>
           </section>
         </div>
@@ -500,11 +426,7 @@ function AdminMembersPage() {
               Tạo hồ sơ tích điểm tại quầy. Thành viên mới sẽ có 0 điểm.
             </p>
 
-            <form
-              className="admin-add-member-form"
-              onSubmit={handleAddMember}
-              noValidate
-            >
+            <form className="admin-add-member-form" onSubmit={handleAddMember} noValidate>
               <label>
                 HỌ VÀ TÊN
                 <input

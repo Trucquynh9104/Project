@@ -1,16 +1,19 @@
 import { useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import {
+  getMembershipTier,
   getCurrentUser,
+  GOLD_MIN_POINTS,
   logoutUser,
   redeemPointsVoucher,
+  SILVER_MIN_POINTS,
 } from '../../services/authService'
 import NotificationDropdown from '../../components/NotificationDropdown'
 import CustomerAvatar from '../../components/CustomerAvatar'
 
 const VOUCHERS_KEY = 'blossom-vouchers'
-const SILVER_POINTS = 50
-const GOLD_POINTS = 1000
+const SILVER_POINTS = SILVER_MIN_POINTS
+const GOLD_POINTS = GOLD_MIN_POINTS
 
 const defaultVouchers = [
   {
@@ -157,20 +160,21 @@ function CustomerPointsPage() {
   }
 
   const points = Number(user.points || 0)
-  const memberTier =
-    points >= GOLD_POINTS
-      ? 'Gold'
-      : points >= SILVER_POINTS
-        ? 'Silver'
-        : 'Member'
+  const memberTier = getMembershipTier(points)
 
   const nextTier =
     points < SILVER_POINTS
       ? { name: 'Silver', target: SILVER_POINTS }
-      : { name: 'Gold', target: GOLD_POINTS }
+      : points < GOLD_POINTS
+        ? { name: 'Gold', target: GOLD_POINTS }
+        : null
 
-  const progress = Math.min((points / nextTier.target) * 100, 100)
-  const pointsToNextTier = Math.max(nextTier.target - points, 0)
+  const progress = nextTier
+    ? Math.min((points / nextTier.target) * 100, 100)
+    : 100
+  const pointsToNextTier = nextTier
+    ? Math.max(nextTier.target - points, 0)
+    : 0
   const enteredPoints = Number(pointsToRedeem)
   const canRedeem =
     Number.isInteger(enteredPoints) &&

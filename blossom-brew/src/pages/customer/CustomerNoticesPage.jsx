@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { getCurrentUser, logoutUser } from '../../services/authService'
+import {
+  getCurrentUser,
+  getMembershipLabel,
+  logoutUser,
+} from '../../services/authService'
 import NotificationDropdown from '../../components/NotificationDropdown'
 import CustomerAvatar from '../../components/CustomerAvatar'
 
@@ -13,6 +17,31 @@ const navigationItems = [
   { icon: '✦', label: 'Thông báo', to: '/customer/notices', active: true },
   { icon: '☷', label: 'Thông tin cá nhân', to: '/customer/profile' },
 ]
+
+const ITEMS_PER_PAGE = 8
+
+function ListFooter({ currentPage, itemLabel, onPageChange, totalItems, totalPages }) {
+  const buttonStyle = {
+    background: '#fff',
+    border: '1px solid #dfcfc3',
+    color: '#765747',
+    height: '32px',
+    width: '32px',
+  }
+
+  return (
+    <div style={{ alignItems: 'center', borderTop: '1px solid #eadfd5', display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', minHeight: '58px', padding: '0 18px' }}>
+      <span style={{ color: '#806858', fontSize: '13px' }}>
+        Tổng số {itemLabel}: <strong style={{ color: '#50382c' }}>{totalItems}</strong>
+      </span>
+      <div style={{ alignItems: 'center', display: 'flex', gap: '8px' }}>
+        <button aria-label="Trang trước" disabled={currentPage === 1} onClick={() => onPageChange(Math.max(1, currentPage - 1))} style={{ ...buttonStyle, cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }} type="button">{'<'}</button>
+        <span style={{ color: '#806858', fontSize: '13px' }}>Trang {currentPage} / {totalPages}</span>
+        <button aria-label="Trang sau" disabled={currentPage === totalPages} onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} style={{ ...buttonStyle, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }} type="button">{'>'}</button>
+      </div>
+    </div>
+  )
+}
 
 function getCartCount() {
   try {
@@ -74,6 +103,7 @@ function CustomerNoticesPage() {
   const [notices, setNotices] = useState(() =>
     user ? loadNotices(user.id) : [],
   )
+  const [currentPage, setCurrentPage] = useState(1)
 
   if (!user) {
     return <Navigate to="/login" replace />
@@ -87,12 +117,13 @@ function CustomerNoticesPage() {
     .toUpperCase()
 
   const unreadCount = notices.filter((notice) => !notice.read).length
-  const membershipLabel =
-    Number(user.points || 0) >= 1000
-      ? 'Gold member'
-      : Number(user.points || 0) >= 50
-        ? 'Silver member'
-        : 'Member'
+  const totalPages = Math.max(1, Math.ceil(notices.length / ITEMS_PER_PAGE))
+  const activePage = Math.min(currentPage, totalPages)
+  const paginatedNotices = notices.slice(
+    (activePage - 1) * ITEMS_PER_PAGE,
+    activePage * ITEMS_PER_PAGE,
+  )
+  const membershipLabel = getMembershipLabel(user.points)
 
   function saveNotices(updatedNotices) {
     setNotices(updatedNotices)
@@ -190,7 +221,7 @@ function CustomerNoticesPage() {
           </div>
 
           <div className="bb-notice-list">
-            {notices.map((notice, index) => (
+            {paginatedNotices.map((notice, index) => (
               <button
                 className={notice.read ? 'bb-notice-item' : 'bb-notice-item unread'}
                 key={notice.id}
@@ -198,7 +229,7 @@ function CustomerNoticesPage() {
                 onClick={() => openNotice(notice)}
               >
                 <span className="bb-notice-number">
-                  {String(index + 1).padStart(2, '0')}
+                  {String((activePage - 1) * ITEMS_PER_PAGE + index + 1).padStart(2, '0')}
                 </span>
 
                 <span className="bb-notice-copy">
@@ -210,6 +241,14 @@ function CustomerNoticesPage() {
                 {!notice.read && <i className="bb-notice-unread-dot" />}
               </button>
             ))}
+
+            <ListFooter
+              currentPage={activePage}
+              itemLabel="thông báo"
+              onPageChange={setCurrentPage}
+              totalItems={notices.length}
+              totalPages={totalPages}
+            />
           </div>
         </section>
       </main>

@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import {
   addLoyaltyMember,
   getCurrentUser,
   getLoyaltyMembers,
-  logoutUser,
+  getMembershipTier,
+  SILVER_MIN_POINTS,
 } from '../../services/authService'
+import CashierShell from '../../components/CashierShell'
 
 const products = [
   { id: 1, name: 'Cold Brew Cam', category: 'Cà phê', price: 45000 },
@@ -50,7 +52,6 @@ function formatDateTime(date) {
 }
 
 function CashierPOSPage() {
-  const navigate = useNavigate()
   const user = getCurrentUser()
   const [category, setCategory] = useState('Tất cả')
   const [cart, setCart] = useState([])
@@ -86,7 +87,7 @@ function CashierPOSPage() {
   const appliedVoucherIsEligible =
     appliedVoucher &&
     total >= appliedVoucher.minOrder &&
-    (!appliedVoucher.requiresSilver || selectedMember?.points >= 500)
+    (!appliedVoucher.requiresSilver || selectedMember?.points >= SILVER_MIN_POINTS)
 
   const discountAmount = appliedVoucherIsEligible
     ? appliedVoucher.type === 'percent'
@@ -188,7 +189,7 @@ function CashierPOSPage() {
       return
     }
 
-    if (voucher.requiresSilver && (!selectedMember || selectedMember.points < 500)) {
+    if (voucher.requiresSilver && (!selectedMember || selectedMember.points < SILVER_MIN_POINTS)) {
       showToast('error', 'Voucher BBSILVER chỉ áp dụng cho thành viên Silver.')
       return
     }
@@ -314,96 +315,18 @@ function CashierPOSPage() {
     setAppliedVoucher(null)
   }
 
-  function handleLogout() {
-    logoutUser()
-    navigate('/')
-  }
-
   return (
-    <div className="cashier-dashboard">
-      <aside className="cashier-sidebar">
-        <button
-          className="cashier-brand"
-          type="button"
-          onClick={() => navigate('/')}
-        >
-          <span>B</span>
-          Blossom Brew
-        </button>
-
-        <p className="cashier-sidebar-label">Cashier workspace</p>
-
-        <nav className="cashier-nav">
-          <button className="cashier-nav-item active" type="button">
-            <span>▥</span>
-            Tạo đơn tại quầy
-          </button>
-
-          <button
-            className="cashier-nav-item"
-            type="button"
-            onClick={() => navigate('/cashier/orders')}
-          >
-            <span>□</span>
-            Quản lý đơn hàng
-          </button>
-
-          <button className="cashier-nav-item" type="button">
-            <span>◌</span>
-            Ca làm việc
-          </button>
-
-          <button className="cashier-nav-item" type="button">
-            <span>✦</span>
-            Thông báo
-          </button>
-
-          <button className="cashier-nav-item" type="button">
-            <span>☷</span>
-            Thông tin cá nhân
-          </button>
-        </nav>
-
-        <div className="cashier-profile">
-          <span className="cashier-avatar">
-            {user.name
-              .split(' ')
-              .map((part) => part[0])
-              .slice(-2)
-              .join('')
-              .toUpperCase()}
-          </span>
-
-          <div>
-            <strong>{user.name}</strong>
-            <small>Cashier · Ca sáng</small>
-          </div>
-
-          <button type="button" onClick={handleLogout}>
-            Đăng xuất
-          </button>
-        </div>
-      </aside>
-
-      <main className="cashier-main">
-        <header className="cashier-topbar">
-          <span>TẠO ĐƠN TẠI QUẦY</span>
-          <span className="cashier-shift-status">● Ca sáng đang mở</span>
-        </header>
-
+    <>
+      <CashierShell
+        active="pos"
+        className="cashier-pos-page"
+        topbarDescription="Chọn món, tìm thành viên và hoàn tất thanh toán cho khách."
+        topbarTitle="Tạo đơn tại quầy."
+        user={user}
+      >
         <section className="cashier-content">
-          <div className="cashier-heading">
-            <div>
-              <p className="cashier-eyebrow">Point of sale</p>
-              <h1>Tạo đơn tại quầy.</h1>
-              <p>Chọn món, tìm thành viên và hoàn tất thanh toán cho khách.</p>
-            </div>
-
-            <button
-              className="cashier-outline-button"
-              type="button"
-              onClick={handleNewOrder}
-            >
+          <div className="cashier-page-actions">
+            <button className="cashier-outline-button" type="button" onClick={handleNewOrder}>
               ＋ Đơn mới
             </button>
           </div>
@@ -468,7 +391,7 @@ function CashierPOSPage() {
                     <strong>✓ {selectedMember.name}</strong>
                     <br />
                     <span>
-                      {selectedMember.phone} · {selectedMember.points} điểm
+                      {selectedMember.phone} · {getMembershipTier(selectedMember.points)} · {selectedMember.points} điểm
                     </span>
                   </div>
                 )}
@@ -622,7 +545,7 @@ function CashierPOSPage() {
             </aside>
           </div>
         </section>
-      </main>
+      </CashierShell>
 
       {selectedProduct && (
         <div
@@ -755,7 +678,7 @@ function CashierPOSPage() {
           {toast.text}
         </div>
       )}
-    </div>
+    </>
   )
 }
 

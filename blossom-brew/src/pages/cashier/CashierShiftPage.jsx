@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
-import { getCurrentUser, logoutUser } from '../../services/authService'
+import { Navigate } from 'react-router-dom'
+import CashierShell from '../../components/CashierShell'
+import { getCurrentUser } from '../../services/authService'
 
 const ORDERS_KEY = 'blossom-orders'
 const SHIFT_HISTORY_KEY = 'blossom-cashier-shift-history'
@@ -11,18 +12,6 @@ function getShiftKey(cashierId) {
 
 function formatPrice(price) {
   return `${Number(price || 0).toLocaleString('vi-VN')}đ`
-}
-
-function formatDateTime(value) {
-  if (!value) return '—'
-
-  return new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(value))
 }
 
 function getOrders() {
@@ -42,20 +31,17 @@ function createShift(user) {
     status: 'open',
     openedAt: new Date().toISOString(),
     closedAt: null,
+    openingCash: 500000,
   }
 }
 
 function loadShift(user) {
   const shiftKey = getShiftKey(user.id)
-
   try {
     const savedShift = JSON.parse(localStorage.getItem(shiftKey) || 'null')
-
-    if (savedShift?.cashierId === user.id) {
-      return savedShift
-    }
+    if (savedShift?.cashierId === user.id) return savedShift
   } catch {
-    // Tạo lại ca mới nếu localStorage cũ bị lỗi định dạng.
+    // Tạo lại ca nếu dữ liệu cũ bị lỗi.
   }
 
   const newShift = createShift(user)
@@ -64,25 +50,21 @@ function loadShift(user) {
 }
 
 function CashierShiftPage() {
-  const navigate = useNavigate()
   const user = getCurrentUser()
   const [shift, setShift] = useState(() => (user ? loadShift(user) : null))
   const [orders, setOrders] = useState(getOrders)
+  const [openingCash, setOpeningCash] = useState(() => String(shift?.openingCash || 500000))
+  const [actualCash, setActualCash] = useState('')
   const [message, setMessage] = useState('')
 
   const shiftOrders = useMemo(() => {
     if (!shift || !user) return []
-
     const openedAt = new Date(shift.openedAt).getTime()
-    const closedAt = shift.closedAt
-      ? new Date(shift.closedAt).getTime()
-      : Number.POSITIVE_INFINITY
+    const closedAt = shift.closedAt ? new Date(shift.closedAt).getTime() : Number.POSITIVE_INFINITY
 
     return orders.filter((order) => {
       const createdAt = new Date(order.createdAt).getTime()
-      const belongsToCashier = !order.cashierId || order.cashierId === user.id
-
-      return belongsToCashier && createdAt >= openedAt && createdAt <= closedAt
+      return (!order.cashierId || order.cashierId === user.id) && createdAt >= openedAt && createdAt <= closedAt
     })
   }, [orders, shift, user])
 
@@ -90,13 +72,12 @@ function CashierShiftPage() {
     () => shiftOrders.filter((order) => order.status === 'Hoàn tất'),
     [shiftOrders],
   )
-
+  const pendingOrders = useMemo(
+    () => shiftOrders.filter((order) => !['Hoàn tất', 'Đã hủy'].includes(order.status)).length,
+    [shiftOrders],
+  )
   const revenue = useMemo(
-    () =>
-      completedOrders.reduce(
-        (sum, order) => sum + Number(order.total || 0),
-        0,
-      ),
+    () => completedOrders.reduce((sum, order) => sum + Number(order.total || 0), 0),
     [completedOrders],
   )
 
@@ -104,149 +85,114 @@ function CashierShiftPage() {
     return <Navigate to="/login" replace />
   }
 
-  const initials = user.name
-    .split(' ')
-    .map((part) => part[0])
-    .slice(-2)
-    .join('')
-    .toUpperCase()
-
   function saveShift(updatedShift) {
     localStorage.setItem(getShiftKey(user.id), JSON.stringify(updatedShift))
     setShift(updatedShift)
   }
 
-  function saveShiftToHistory(closedShift) {
-    let history = []
-
-    try {
-      history = JSON.parse(localStorage.getItem(SHIFT_HISTORY_KEY) || '[]')
-    } catch {
-      history = []
+  function saveOpeningCash() {
+    const amount = Number(openingCash.replace(/\D/g, ''))
+    if (!amount) {
+      setMessage('Vui lòng nhập tiền mặt đầu ca hợp lệ.')
+      return
     }
-
-    const newHistory = [
-      ...history.filter((item) => item.id !== closedShift.id),
-      closedShift,
-    ]
-
-    localStorage.setItem(SHIFT_HISTORY_KEY, JSON.stringify(newHistory))
+    saveShift({ ...shift, openingCash: amount })
+    setOpeningCash(String(amount))
+    setMessage('Đã lưu tiền mặt đầu ca.')
   }
 
   function handleShiftAction() {
     if (shift.status === 'open') {
-      const confirmed = window.confirm('Bạn có muốn kết thúc ca hiện tại không?')
-      if (!confirmed) return
+      if (!actualCash.trim()) {
+        setMessage('Vui lòng nhập số tiền kiểm đếm trước khi đóng ca.')
+        return
+      }
+      if (!window.confirm('Bạn có muốn kết thúc ca hiện tại không?')) return
 
       const closedShift = {
         ...shift,
+        actualCash: Number(actualCash.replace(/\D/g, '')) || 0,
         status: 'closed',
         closedAt: new Date().toISOString(),
       }
-
       saveShift(closedShift)
-      saveShiftToHistory(closedShift)
+
+      let history = []
+      try {
+        history = JSON.parse(localStorage.getItem(SHIFT_HISTORY_KEY) || '[]')
+      } catch {
+        history = []
+      }
+      localStorage.setItem(
+        SHIFT_HISTORY_KEY,
+        JSON.stringify([...history.filter((item) => item.id !== closedShift.id), closedShift]),
+      )
       setMessage('Đã kết thúc ca và lưu báo cáo ca làm việc.')
       return
     }
 
     const newShift = createShift(user)
     saveShift(newShift)
+    setOpeningCash(String(newShift.openingCash))
+    setActualCash('')
     setOrders(getOrders())
     setMessage('Đã mở ca mới.')
   }
 
-  function handleLogout() {
-    logoutUser()
-    navigate('/')
-  }
-
   return (
-    <div className="cashier-dashboard">
-      <aside className="cashier-sidebar">
-        <button className="cashier-brand" type="button" onClick={() => navigate('/')}>
-          <span>B</span>
-          Blossom Brew
-        </button>
+    <CashierShell
+      active="shift"
+      topbarDescription="Theo dõi tổng quan các giao dịch tại quầy trong ca hiện tại."
+      topbarTitle="Ca làm việc."
+      user={user}
+    >
+      <section className="cashier-content cashier-shift-content">
+        <p className="cashier-shift-date">01/09/2026 <span>–</span> 30/09/2026 <b>✦</b></p>
 
-        <p className="cashier-sidebar-label">Cashier workspace</p>
-
-        <nav className="cashier-nav">
-          <button className="cashier-nav-item" type="button" onClick={() => navigate('/cashier')}>
-            <span>▥</span>
-            Tạo đơn tại quầy
-          </button>
-          <button className="cashier-nav-item" type="button" onClick={() => navigate('/cashier/orders')}>
-            <span>□</span>
-            Quản lý đơn hàng
-          </button>
-          <button className="cashier-nav-item active" type="button">
-            <span>◌</span>
-            Ca làm việc
-          </button>
-          <button className="cashier-nav-item" type="button" onClick={() => navigate('/cashier/notices')}>
-            <span>✦</span>
-            Thông báo
-          </button>
-          <button className="cashier-nav-item" type="button" onClick={() => navigate('/cashier/profile')}>
-            <span>☷</span>
-            Thông tin cá nhân
-          </button>
-        </nav>
-
-        <div className="cashier-profile">
-          <span className="cashier-avatar">{initials}</span>
-          <div>
-            <strong>{user.name}</strong>
-            <small>Cashier · {shift?.name || 'Ca sáng'}</small>
-          </div>
-          <button type="button" onClick={handleLogout}>Đăng xuất</button>
-        </div>
-      </aside>
-
-      <main className="cashier-main">
-        <section className="cashier-content">
-          <div className="cashier-heading">
-            <div>
-              <p className="cashier-eyebrow">Work shift</p>
-              <h1>Ca làm việc.</h1>
-              <p>Theo dõi hoạt động và tổng kết ca làm tại quầy.</p>
-            </div>
-            <span className={shift.status === 'open' ? 'cashier-shift-badge open' : 'cashier-shift-badge closed'}>
-              ● {shift.status === 'open' ? 'Ca đang mở' : 'Ca đã đóng'}
-            </span>
-          </div>
-
-          <section className="cashier-shift-card">
-            <div>
-              <p className="cashier-eyebrow">{shift.name}</p>
-              <h2>{shift.status === 'open' ? 'Ca sáng đang mở.' : 'Ca sáng đã kết thúc.'}</h2>
-              <p>
-                {shift.status === 'open'
-                  ? `Bắt đầu lúc ${formatDateTime(shift.openedAt)}`
-                  : `Từ ${formatDateTime(shift.openedAt)} đến ${formatDateTime(shift.closedAt)}`}
-              </p>
-            </div>
-            <button className="cashier-shift-action" type="button" onClick={handleShiftAction}>
-              {shift.status === 'open' ? 'Kết thúc ca' : 'Mở ca mới'}
-            </button>
-          </section>
-
-          <section className="cashier-shift-summary">
-            <article><span>Đơn đã tạo trong ca</span><strong>{shiftOrders.length.toString().padStart(2, '0')}</strong></article>
-            <article><span>Đơn hoàn tất</span><strong>{completedOrders.length.toString().padStart(2, '0')}</strong></article>
-            <article><span>Doanh thu đã hoàn tất</span><strong>{formatPrice(revenue)}</strong></article>
-          </section>
-
-          <section className="cashier-shift-note">
-            <p className="cashier-eyebrow">Lưu ý</p>
-            <p>Chỉ đơn có trạng thái <strong>Hoàn tất</strong> mới được tính vào doanh thu ca.</p>
-          </section>
-
-          {message && <p className="cashier-message">{message}</p>}
+        <section className="cashier-shift-summary">
+          <article><strong>{String(shiftOrders.length).padStart(2, '0')}</strong><span>Đơn đã tạo trong ca</span></article>
+          <article><strong>{formatPrice(revenue)}</strong><span>Doanh thu tạm tính</span></article>
+          <article><strong>{String(pendingOrders).padStart(2, '0')}</strong><span>Đơn đang xử lý</span></article>
         </section>
-      </main>
-    </div>
+
+        <section className="cashier-shift-controls">
+          <article>
+            <h2>Mở ca</h2>
+            <label>
+              Tiền mặt đầu ca
+              <input
+                inputMode="numeric"
+                value={openingCash}
+                disabled={shift.status === 'closed'}
+                onChange={(event) => setOpeningCash(event.target.value)}
+              />
+            </label>
+            <button className="cashier-outline-button" disabled={shift.status === 'closed'} type="button" onClick={saveOpeningCash}>
+              Lưu thông tin
+            </button>
+          </article>
+
+          <article>
+            <h2>Đóng ca</h2>
+            <label>
+              Tiền mặt thực tế
+              <input
+                inputMode="numeric"
+                value={actualCash}
+                disabled={shift.status === 'closed'}
+                placeholder="Nhập số tiền kiểm đếm"
+                onChange={(event) => setActualCash(event.target.value)}
+              />
+            </label>
+            <button className="cashier-shift-action" type="button" onClick={handleShiftAction}>
+              {shift.status === 'open' ? 'Gửi yêu cầu đóng ca' : 'Mở ca mới'}
+            </button>
+          </article>
+        </section>
+
+        {message && <p className="cashier-message">{message}</p>}
+      </section>
+    </CashierShell>
   )
 }
 

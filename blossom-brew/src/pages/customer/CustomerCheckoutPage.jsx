@@ -2,9 +2,11 @@ import { useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import {
   getCurrentUser,
+  getMembershipLabel,
   getPersonalVouchers,
   logoutUser,
-  usePersonalVoucher,
+  SILVER_MIN_POINTS,
+  consumePersonalVoucher,
 } from '../../services/authService'
 import NotificationDropdown from '../../components/NotificationDropdown'
 import CustomerAvatar from '../../components/CustomerAvatar'
@@ -40,6 +42,7 @@ function getAdminVouchers() {
       minOrder: 80000,
       maxDiscount: 30000,
       active: true,
+      requiresSilver: true,
     },
     {
       code: 'WELCOME25',
@@ -122,6 +125,15 @@ function getVoucherResult({ voucherCode, user, subtotal }) {
     }
   }
 
+  if (voucher.requiresSilver && Number(user.points || 0) < SILVER_MIN_POINTS) {
+    return {
+      discount: 0,
+      message: `Voucher ${voucher.code} chỉ dành cho thành viên Silver từ ${SILVER_MIN_POINTS} điểm.`,
+      isValid: false,
+      isPersonalVoucher: false,
+    }
+  }
+
   const rawDiscount =
     voucher.type === 'percent'
       ? Math.round((subtotal * Number(voucher.value || 0)) / 100)
@@ -173,6 +185,8 @@ function CustomerCheckoutPage() {
   const cartCount = cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0)
 
   if (!user) return <Navigate to="/login" replace />
+
+  const membershipLabel = getMembershipLabel(user.points)
 
   const initials = user.name
     .split(' ')
@@ -249,7 +263,7 @@ function CustomerCheckoutPage() {
     localStorage.setItem('blossom-orders', JSON.stringify([order, ...orders]))
 
     if (voucherResult.isPersonalVoucher && voucherResult.isValid) {
-      usePersonalVoucher({ userId: user.id, code: voucherCode })
+      consumePersonalVoucher({ userId: user.id, code: voucherCode })
     }
 
     localStorage.removeItem('blossom-cart')
@@ -282,7 +296,7 @@ function CustomerCheckoutPage() {
           <span className="bb-avatar">{initials}</span>
           <div>
             <strong>{user.name}</strong>
-            <small>Silver member</small>
+            <small>{membershipLabel}</small>
           </div>
           <button type="button" onClick={handleLogout}>Đăng xuất</button>
         </div>

@@ -1,10 +1,7 @@
 import { useMemo, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
-import {
-  addMemberPoints,
-  getCurrentUser,
-  logoutUser,
-} from '../../services/authService'
+import { Navigate } from 'react-router-dom'
+import CashierShell from '../../components/CashierShell'
+import { addMemberPoints, getCurrentUser } from '../../services/authService'
 
 const statusFilters = [
   'Tất cả trạng thái',
@@ -14,6 +11,35 @@ const statusFilters = [
   'Đã hủy',
 ]
 
+const ITEMS_PER_PAGE = 8
+
+function ListFooter({ currentPage, onPageChange, totalItems, totalPages }) {
+  return (
+    <div className="cashier-list-footer">
+      <span>Tổng số đơn hàng <b>{totalItems}</b></span>
+      <div>
+        <button
+          aria-label="Trang trước"
+          disabled={currentPage === 1}
+          type="button"
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+        >
+          ‹
+        </button>
+        <span>Trang {currentPage}/{totalPages}</span>
+        <button
+          aria-label="Trang sau"
+          disabled={currentPage === totalPages}
+          type="button"
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+        >
+          ›
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function formatPrice(price) {
   return `${Number(price || 0).toLocaleString('vi-VN')}đ`
 }
@@ -22,26 +48,22 @@ function getOrderGroup(status) {
   if (status === 'Hoàn tất') return 'completed'
   if (status === 'Đã hủy') return 'cancelled'
   if (status === 'Chờ xác nhận') return 'incomplete'
-
   return 'processing'
 }
 
 function CustomerName({ order }) {
   return (
     <div>
-      <strong>
-        {order.member?.name || order.receiver || 'Khách vãng lai'}
-      </strong>
+      <strong>{order.member?.name || order.receiver || 'Khách vãng lai'}</strong>
       <small>{order.product}</small>
     </div>
   )
 }
 
 function CashierOrdersPage() {
-  const navigate = useNavigate()
   const user = getCurrentUser()
-
   const [filter, setFilter] = useState('Tất cả trạng thái')
+  const [currentPage, setCurrentPage] = useState(1)
   const [expandedOrderId, setExpandedOrderId] = useState(null)
   const [orders, setOrders] = useState(() =>
     JSON.parse(localStorage.getItem('blossom-orders') || '[]'),
@@ -49,35 +71,25 @@ function CashierOrdersPage() {
 
   const filteredOrders = useMemo(() => {
     if (filter === 'Tất cả trạng thái') return orders
-
     return orders.filter((order) => order.status === filter)
   }, [orders, filter])
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / ITEMS_PER_PAGE))
+  const activePage = Math.min(currentPage, totalPages)
+  const paginatedOrders = filteredOrders.slice(
+    (activePage - 1) * ITEMS_PER_PAGE,
+    activePage * ITEMS_PER_PAGE,
+  )
 
   if (!user || user.role !== 'cashier') {
     return <Navigate to="/login" replace />
   }
 
-  const initials = user.name
-    .split(' ')
-    .map((part) => part[0])
-    .slice(-2)
-    .join('')
-    .toUpperCase()
-
-  function handleLogout() {
-    logoutUser()
-    navigate('/')
-  }
-
   function updateOrderStatus(id, status) {
     const orderToUpdate = orders.find((order) => order.id === id)
-
     if (!orderToUpdate) return
 
-    const pointsToAdd = Math.floor(
-      Number(orderToUpdate.total || 0) / 20000,
-    )
-
+    const pointsToAdd = Math.floor(Number(orderToUpdate.total || 0) / 20000)
     const shouldAwardPoints =
       status === 'Hoàn tất' &&
       orderToUpdate.status !== 'Hoàn tất' &&
@@ -90,13 +102,10 @@ function CashierOrdersPage() {
     if (shouldAwardPoints) {
       const result = addMemberPoints({
         id: orderToUpdate.member.id,
-        memberType: orderToUpdate.member.memberType,
+        memberType: orderToUpdate.member.memberType || 'account',
         points: pointsToAdd,
       })
-
-      if (result.ok) {
-        awardedPoints = pointsToAdd
-      }
+      if (result.ok) awardedPoints = pointsToAdd
     }
 
     const updatedOrders = orders.map((order) =>
@@ -112,226 +121,120 @@ function CashierOrdersPage() {
     )
 
     setOrders(updatedOrders)
+    localStorage.setItem('blossom-orders', JSON.stringify(updatedOrders))
+  }
 
-    localStorage.setItem(
-      'blossom-orders',
-      JSON.stringify(updatedOrders),
-    )
+  function exportOrders() {
+    const rows = filteredOrders.map((order) => [
+      order.id,
+      order.member?.name || order.receiver || 'Khách vãng lai',
+      order.product || '',
+      order.time || '',
+      order.status || '',
+      Number(order.total || 0),
+    ])
+    const csv = [
+      ['Mã đơn', 'Khách hàng', 'Sản phẩm', 'Thời gian', 'Trạng thái', 'Tổng tiền'],
+      ...rows,
+    ]
+      .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(','))
+      .join('\n')
+    const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'don-hang-tai-quay.csv'
+    link.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
-    <div className="cashier-dashboard">
-      <aside className="cashier-sidebar">
-        <button
-          className="cashier-brand"
-          type="button"
-          onClick={() => navigate('/')}
-        >
-          <span>B</span>
-          Blossom Brew
-        </button>
-
-        <p className="cashier-sidebar-label">Cashier workspace</p>
-
-        <nav className="cashier-nav">
-          <button
-            className="cashier-nav-item"
-            type="button"
-            onClick={() => navigate('/cashier')}
-          >
-            <span>▥</span>
-            Tạo đơn tại quầy
-          </button>
-
-          <button className="cashier-nav-item active" type="button">
-            <span>□</span>
-            Quản lý đơn hàng
-          </button>
-
-          <button
-            className="cashier-nav-item"
-            type="button"
-            onClick={() => navigate('/cashier/shift')}
-          >
-            <span>◌</span>
-            Ca làm việc
-          </button>
-
-          <button
-            className="cashier-nav-item"
-            type="button"
-            onClick={() => navigate('/cashier/notices')}
-          >
-            <span>✦</span>
-            Thông báo
-          </button>
-
-          <button
-            className="cashier-nav-item"
-            type="button"
-            onClick={() => navigate('/cashier/profile')}
-          >
-            <span>☷</span>
-            Thông tin cá nhân
-          </button>
-        </nav>
-
-        <div className="cashier-profile">
-          <span className="cashier-avatar">{initials}</span>
-
+    <CashierShell
+      active="orders"
+      topbarDescription="Theo dõi và cập nhật trạng thái đơn được xử lý tại cửa hàng."
+      topbarTitle="Quản lý đơn hàng."
+      user={user}
+    >
+      <section className="cashier-content cashier-list-content">
+        <div className="cashier-order-toolbar">
+          <span className="cashier-order-date">01/09/2026 &nbsp;–&nbsp; 30/09/2026 &nbsp;✦</span>
           <div>
-            <strong>{user.name}</strong>
-            <small>Cashier · Ca sáng</small>
-          </div>
-
-          <button type="button" onClick={handleLogout}>
-            Đăng xuất
-          </button>
-        </div>
-      </aside>
-
-      <main className="cashier-main">
-        <section className="cashier-content">
-          <div className="cashier-heading">
-            <div>
-              <p className="cashier-eyebrow">Store orders</p>
-              <h1>Quản lý đơn hàng.</h1>
-              <p>
-                Theo dõi và cập nhật trạng thái đơn được xử lý tại quầy.
-              </p>
-            </div>
-
-            <button
-              className="cashier-outline-button"
-              type="button"
-              onClick={() => navigate('/cashier')}
-            >
-              ＋ Tạo đơn mới
+            <button className="cashier-outline-button" type="button" onClick={exportOrders}>
+              Xuất file
             </button>
-          </div>
-
-          <div className="cashier-order-toolbar">
-            <p>{filteredOrders.length} đơn hàng</p>
-
             <select
+              aria-label="Lọc trạng thái đơn hàng"
               value={filter}
-              onChange={(event) => setFilter(event.target.value)}
+              onChange={(event) => {
+                setFilter(event.target.value)
+                setCurrentPage(1)
+              }}
             >
-              {statusFilters.map((status) => (
-                <option key={status}>{status}</option>
-              ))}
+              {statusFilters.map((status) => <option key={status}>{status}</option>)}
             </select>
           </div>
+        </div>
 
-          <section className="cashier-orders-table">
-            <div className="cashier-orders-row cashier-orders-header">
-              <span>Mã đơn</span>
-              <span>Khách hàng / sản phẩm</span>
-              <span>Thời gian</span>
-              <span>Trạng thái</span>
-              <span>Thao tác</span>
-            </div>
+        <section className="cashier-orders-table">
+          <div className="cashier-orders-row cashier-orders-header">
+            <span>Mã đơn</span>
+            <span>Khách hàng / sản phẩm</span>
+            <span>Thời gian</span>
+            <span>Trạng thái</span>
+            <span>Thao tác</span>
+          </div>
 
-            {filteredOrders.map((order) => (
-              <div key={order.id} className="cashier-order-record">
-                <div className="cashier-orders-row">
-                  <strong>{order.id}</strong>
-
-                  <CustomerName order={order} />
-
-                  <span>{order.time || '—'}</span>
-
-                  <select
-                    className={`cashier-status-select ${getOrderGroup(
-                      order.status,
-                    )}`}
-                    value={order.status}
-                    onChange={(event) =>
-                      updateOrderStatus(order.id, event.target.value)
-                    }
-                  >
-                    <option value="Chờ xác nhận">Chờ xác nhận</option>
-                    <option value="Đang pha">Đang pha</option>
-                    <option value="Hoàn tất">Hoàn tất</option>
-                    <option value="Đã hủy">Đã hủy</option>
-                  </select>
-
-                  <button
-                    className="cashier-detail-button"
-                    type="button"
-                    onClick={() =>
-                      setExpandedOrderId(
-                        expandedOrderId === order.id ? null : order.id,
-                      )
-                    }
-                  >
-                    {expandedOrderId === order.id ? 'Đóng' : 'Chi tiết'}
-                  </button>
-                </div>
-
-                {expandedOrderId === order.id && (
-                  <div className="cashier-order-detail">
-                    <div>
-                      <span>Khách nhận</span>
-                      <strong>
-                        {order.receiver || 'Khách vãng lai'}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Thanh toán</span>
-                      <strong>
-                        {order.paymentMethod === 'cash'
-                          ? 'Tiền mặt'
-                          : order.paymentMethod === 'qr'
-                            ? 'QR'
-                            : 'Thẻ'}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Tổng thanh toán</span>
-                      <strong>{formatPrice(order.total)}</strong>
-                    </div>
-
-                    {order.earnedPoints > 0 && (
-                      <div>
-                        <span>Điểm tích lũy</span>
-                        <strong>+{order.earnedPoints} điểm</strong>
-                      </div>
-                    )}
-
-                    <div className="cashier-order-detail-items">
-                      {order.items?.map((item) => (
-                        <p key={item.id}>
-                          <strong>
-                            {item.name} ×{item.quantity}
-                          </strong>
-
-                          <span>
-                            Size {item.size} · {item.sugar} đường ·{' '}
-                            {item.ice}
-                            {item.toppings?.length > 0 &&
-                              ` · ${item.toppings.join(', ')}`}
-                            {item.note && ` · Ghi chú: ${item.note}`}
-                          </span>
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                )}
+          {paginatedOrders.map((order) => (
+            <div key={order.id} className="cashier-order-record">
+              <div className="cashier-orders-row">
+                <strong>{order.id}</strong>
+                <CustomerName order={order} />
+                <span>{order.time || '—'}</span>
+                <select
+                  className={`cashier-status-select ${getOrderGroup(order.status)}`}
+                  value={order.status}
+                  onChange={(event) => updateOrderStatus(order.id, event.target.value)}
+                >
+                  {statusFilters.slice(1).map((status) => <option key={status}>{status}</option>)}
+                </select>
+                <button
+                  className="cashier-detail-button"
+                  type="button"
+                  onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
+                >
+                  {expandedOrderId === order.id ? 'Đóng' : 'Chi tiết'}
+                </button>
               </div>
-            ))}
 
-            {filteredOrders.length === 0 && (
-              <p className="cashier-orders-empty">
-                Chưa có đơn hàng phù hợp.
-              </p>
-            )}
-          </section>
+              {expandedOrderId === order.id && (
+                <div className="cashier-order-detail">
+                  <div><span>Khách nhận</span><strong>{order.receiver || 'Khách vãng lai'}</strong></div>
+                  <div><span>Thanh toán</span><strong>{order.paymentMethod === 'cash' ? 'Tiền mặt' : order.paymentMethod === 'qr' ? 'QR' : 'Thẻ'}</strong></div>
+                  <div><span>Tổng thanh toán</span><strong>{formatPrice(order.total)}</strong></div>
+                  {order.earnedPoints > 0 && <div><span>Điểm tích lũy</span><strong>+{order.earnedPoints} điểm</strong></div>}
+                  <div className="cashier-order-detail-items">
+                    {order.items?.map((item) => (
+                      <p key={item.id}>
+                        <strong>{item.name} ×{item.quantity}</strong>
+                        <span>Size {item.size} · {item.sugar} đường · {item.ice}{item.toppings?.length > 0 && ` · ${item.toppings.join(', ')}`}{item.note && ` · Ghi chú: ${item.note}`}</span>
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          {!filteredOrders.length && <p className="cashier-orders-empty">Chưa có đơn hàng phù hợp.</p>}
+
+          <ListFooter
+            currentPage={activePage}
+            totalItems={filteredOrders.length}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </section>
-      </main>
-    </div>
+      </section>
+    </CashierShell>
   )
 }
 
