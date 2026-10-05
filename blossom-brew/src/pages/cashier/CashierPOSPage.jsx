@@ -273,6 +273,7 @@ function CashierPOSPage() {
     const order = {
       id: `#BB-${Date.now().toString().slice(-6)}`,
       createdAt: new Date().toISOString(),
+      paidAt: new Date().toISOString(),
       time: formatDateTime(new Date()),
       product: cart.map((item) => `${item.name} ×${item.quantity}`).join(', '),
       options: 'Đơn tại quầy',
@@ -283,6 +284,9 @@ function CashierPOSPage() {
       voucherCode: appliedVoucher?.code || '',
       orderType: 'counter',
       paymentMethod,
+      paymentStatus: 'paid',
+      cashierId: user.id,
+      cashierName: user.name,
       receiver: selectedMember ? selectedMember.name : 'Khách vãng lai',
       member: selectedMember
         ? {

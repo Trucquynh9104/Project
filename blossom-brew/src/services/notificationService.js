@@ -200,7 +200,7 @@ export function markNotificationRead(user, notificationId) {
 }
 
 export function markAllNotificationsRead(user) {
-  if (!user?.id || !user?.role) return
+  if (!user?.id || !user?.role) return []
 
   const updated = getStoredNotifications().map((notification) => {
     const isRecipient =
@@ -213,6 +213,15 @@ export function markAllNotificationsRead(user) {
   })
 
   publishNotifications(updated)
+  // Trả lại đúng danh sách của tài khoản đang đăng nhập để UI đổi ngay,
+  // không phụ thuộc vào việc component khác có bắt được custom event hay không.
+  return updated
+    .filter((notification) =>
+      notification.recipientRole === user.role &&
+      (!notification.recipientUserId || notification.recipientUserId === user.id),
+    )
+    .map((notification) => ({ ...notification, read: true }))
+    .sort((first, second) => new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime())
 }
 
 export function subscribeNotifications(callback) {

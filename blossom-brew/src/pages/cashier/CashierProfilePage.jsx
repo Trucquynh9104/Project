@@ -93,24 +93,39 @@ function CashierProfilePage() {
             </div>
           </aside>
 
-          <form className="cashier-profile-form" onSubmit={handleSubmit} noValidate>
+          <form autoComplete="off" className="cashier-profile-form" onSubmit={handleSubmit} noValidate>
             <h2>Cập nhật tài khoản</h2>
             <div className="cashier-profile-fields">
               <label>
                 Họ và tên
-                <input name="name" value={form.name} placeholder="Nhập họ và tên" onChange={handleChange} />
+                <input autoComplete="name" name="name" value={form.name} placeholder="Nhập họ và tên" onChange={handleChange} />
               </label>
               <label>
                 Số điện thoại
-                <input name="phone" value={form.phone} placeholder="090 888 6677" onChange={handleChange} />
+                <input
+                  autoComplete="tel-national"
+                  inputMode="tel"
+                  name="phone"
+                  placeholder="090 888 6677"
+                  type="tel"
+                  value={form.phone}
+                  onChange={handleChange}
+                />
               </label>
               <label>
                 Email
-                <input value={currentUser.email} disabled />
+                <input autoComplete="email" disabled value={currentUser.email} />
               </label>
               <label>
                 Mật khẩu mới
-                <input name="password" type="password" value={form.password} placeholder="••••••••" onChange={handleChange} />
+                <input
+                  autoComplete="new-password"
+                  name="password"
+                  placeholder="••••••••"
+                  type="password"
+                  value={form.password}
+                  onChange={handleChange}
+                />
               </label>
             </div>
             {message && <p className={`cashier-profile-message ${messageType}`}>{message}</p>}

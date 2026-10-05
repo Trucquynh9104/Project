@@ -36,6 +36,7 @@ function CashierNoticesPage() {
   const notificationUserRole = user?.role || ''
   const [notices, setNotices] = useState(() => getNotificationsForUser(user))
   const [currentPage, setCurrentPage] = useState(1)
+  const [markAllMessage, setMarkAllMessage] = useState('')
 
   useEffect(() => {
     function refreshNotices() {
@@ -47,7 +48,6 @@ function CashierNoticesPage() {
     return subscribeNotifications(refreshNotices)
   }, [notificationUserId, notificationUserRole])
 
-  const unreadCount = useMemo(() => notices.filter((notice) => !notice.read).length, [notices])
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
   const filteredNotices = useMemo(
@@ -67,15 +67,24 @@ function CashierNoticesPage() {
     navigate(notice.to || '/cashier/orders')
   }
 
+  function handleMarkAllRead() {
+    const hasUnreadNotices = notices.some((notice) => !notice.read)
+    setNotices(markAllNotificationsRead(user))
+    setMarkAllMessage(
+      hasUnreadNotices
+        ? 'Đã đánh dấu tất cả thông báo là đã đọc.'
+        : 'Tất cả thông báo đã được đọc.',
+    )
+  }
+
   return (
     <CashierShell className="cashier-notices-page" active="notices" topbarTitle="Thông báo" user={user}>
       <section className="cashier-content cashier-list-content cashier-notices-content">
         <div className="cashier-notices-toolbar">
           <button
             className="cashier-outline-button"
-            disabled={!unreadCount}
             type="button"
-            onClick={() => markAllNotificationsRead(user)}
+            onClick={handleMarkAllRead}
           >
             Đánh dấu tất cả đã đọc
           </button>
@@ -92,6 +101,7 @@ function CashierNoticesPage() {
             }}
           />
         </div>
+        {markAllMessage && <p aria-live="polite" className="cashier-notices-message">{markAllMessage}</p>}
 
         <section className="cashier-notice-list">
           {paginatedNotices.map((notice, index) => (
