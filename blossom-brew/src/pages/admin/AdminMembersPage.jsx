@@ -7,6 +7,7 @@ import {
   logoutUser,
   updateMemberPoints,
 } from '../../services/authService'
+import { notifyMemberPointsAdjusted } from '../../services/notificationService'
 
 const MEMBERS_PER_PAGE = 8
 
@@ -185,6 +186,7 @@ function AdminMembersPage() {
       return
     }
 
+    notifyMemberPointsAdjusted({ member: selectedMember, points: pointsInput })
     setMembers(getLoyaltyMembers())
     closeMember()
   }

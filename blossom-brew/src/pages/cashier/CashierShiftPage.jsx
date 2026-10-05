@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import CashierShell from '../../components/CashierShell'
+import DateRangeFilter from '../../components/DateRangeFilter'
 import { getCurrentUser } from '../../services/authService'
+import { notifyShiftCloseRequested } from '../../services/notificationService'
+import { isInDateRange } from '../../utils/dateRange'
 
 const ORDERS_KEY = 'blossom-orders'
 const SHIFT_HISTORY_KEY = 'blossom-cashier-shift-history'
@@ -56,6 +59,8 @@ function CashierShiftPage() {
   const [openingCash, setOpeningCash] = useState(() => String(shift?.openingCash || 500000))
   const [actualCash, setActualCash] = useState('')
   const [message, setMessage] = useState('')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
 
   const shiftOrders = useMemo(() => {
     if (!shift || !user) return []
@@ -64,9 +69,14 @@ function CashierShiftPage() {
 
     return orders.filter((order) => {
       const createdAt = new Date(order.createdAt).getTime()
-      return (!order.cashierId || order.cashierId === user.id) && createdAt >= openedAt && createdAt <= closedAt
+      return (
+        (!order.cashierId || order.cashierId === user.id) &&
+        createdAt >= openedAt &&
+        createdAt <= closedAt &&
+        isInDateRange(order.createdAt, fromDate, toDate)
+      )
     })
-  }, [orders, shift, user])
+  }, [orders, shift, user, fromDate, toDate])
 
   const completedOrders = useMemo(
     () => shiftOrders.filter((order) => order.status === 'Hoàn tất'),
@@ -127,6 +137,7 @@ function CashierShiftPage() {
         SHIFT_HISTORY_KEY,
         JSON.stringify([...history.filter((item) => item.id !== closedShift.id), closedShift]),
       )
+      notifyShiftCloseRequested({ shift: closedShift })
       setMessage('Đã kết thúc ca và lưu báo cáo ca làm việc.')
       return
     }
@@ -147,7 +158,13 @@ function CashierShiftPage() {
       user={user}
     >
       <section className="cashier-content cashier-shift-content">
-        <p className="cashier-shift-date">01/09/2026 <span>–</span> 30/09/2026 <b>✦</b></p>
+        <DateRangeFilter
+          className="cashier-shift-date"
+          fromDate={fromDate}
+          toDate={toDate}
+          onFromDateChange={setFromDate}
+          onToDateChange={setToDate}
+        />
 
         <section className="cashier-shift-summary">
           <article><strong>{String(shiftOrders.length).padStart(2, '0')}</strong><span>Đơn đã tạo trong ca</span></article>

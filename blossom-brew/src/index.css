@@ -6895,6 +6895,10 @@ h2 {
 .cashier-order-toolbar > div { display: flex; align-items: center; gap: 12px; }
 .cashier-order-date { margin-right: auto; color: #a28b7d; font-size: 12px; }
 
+.cashier-date-range-filter.cashier-order-date {
+  margin-right: auto;
+}
+
 .cashier-order-toolbar select {
   min-height: 40px;
   min-width: 150px;
@@ -7081,6 +7085,20 @@ h2 {
 .cashier-notice-summary { display: none; }
 
 /* Cashier notices screen */
+.cashier-notices-page,
+.cashier-notices-page .cashier-main,
+.cashier-notices-page .cashier-content {
+  background: #fdfaf7;
+}
+
+.cashier-notices-page .cashier-topbar {
+  background: #fff;
+  border-bottom: 1px solid #e8dcd1;
+}
+
+.cashier-notices-page .cashier-topbar-copy h1 { color: #45342f; }
+.cashier-notices-page .cashier-shift-status { color: #769258; }
+
 .cashier-notices-content {
   max-width: 1160px;
   padding-top: 80px;
@@ -7096,7 +7114,9 @@ h2 {
 .cashier-notices-toolbar .cashier-outline-button {
   min-height: 29px;
   padding: 5px 20px;
-  background: #fffefc;
+  color: #695d5a;
+  background: #fff;
+  border-color: #e1cdbb;
   font-size: 10px;
 }
 
@@ -7107,7 +7127,7 @@ h2 {
 
 .cashier-notices-toolbar p {
   margin: 0 14px 0 0;
-  color: #aa9184;
+  color: #b3a49b;
   font-size: 11px;
   font-weight: 600;
 }
@@ -7119,7 +7139,7 @@ h2 {
 
 .cashier-notices-toolbar p b {
   margin-left: 10px;
-  color: #8a7062;
+  color: #97857b;
   font-size: 10px;
 }
 
@@ -7128,15 +7148,16 @@ h2 {
   grid-template-columns: 80px minmax(0, 1fr) 78px;
   gap: 0;
   padding: 19px 26px 19px 0;
-  background: transparent;
+  background: #fdfaf7;
+  border-color: #eee5de;
 }
 
-.cashier-notice-item.unread { background: transparent; }
+.cashier-notice-item.unread { background: #fdfaf7; }
 
 .cashier-notice-number {
   padding-left: 0;
   align-self: start;
-  color: #c7956e;
+  color: #c8a07b;
   font-size: 22px;
   line-height: 1.2;
 }
@@ -7147,12 +7168,12 @@ h2 {
 
 .cashier-notice-copy strong {
   margin-bottom: 6px;
-  color: #4d3025;
+  color: #45342f;
   font-size: 13px;
 }
 
 .cashier-notice-copy small {
-  color: #aa9184;
+  color: #b9ada7;
   font-size: 11px;
   line-height: 1.55;
 }
@@ -7168,21 +7189,30 @@ h2 {
 }
 
 .cashier-notice-time b {
-  color: #a28a7e;
+  color: #b3a49b;
   font-size: 10px;
   font-weight: 500;
 }
 
 .cashier-notice-time small {
   margin-top: 2px;
-  color: #624135;
+  color: #695d5a;
   font-size: 9px;
   font-weight: 600;
 }
 
 .cashier-notice-list .cashier-list-footer {
   min-height: 40px;
-  background: rgba(255, 254, 252, 0.26);
+  color: #b3a49b;
+  background: #fdfaf7;
+  border-color: #eee5de;
+}
+
+.cashier-notice-list .cashier-list-footer b { color: #695d5a; }
+.cashier-notice-list .cashier-list-footer button {
+  color: #695d5a;
+  background: #fff;
+  border-color: #e1cdbb;
 }
 
 .cashier-profile-content { padding-top: 56px; }
@@ -7272,4 +7302,142 @@ h2 {
   .cashier-profile-fields { grid-template-columns: 1fr; }
   .cashier-profile-content { padding-top: 28px; }
   .cashier-list-footer { align-items: flex-start; flex-direction: column; }
+}
+
+/* Trạng thái chưa đọc: dùng một màu xanh nhất quán cho mọi vai trò. */
+.bb-notification-badge,
+.bb-notification-item-dot,
+.bb-notice-unread-dot,
+.cashier-notice-unread-dot,
+.admin-unread-dot {
+  display: block !important;
+  min-width: 9px;
+  min-height: 9px;
+  background: #71945d;
+  box-shadow: 0 0 0 2px #fdfaf7;
+}
+
+.bb-notification-empty {
+  margin: 0;
+  padding: 18px 16px;
+  color: #9a8274;
+  font-size: 11px;
+  text-align: center;
+}
+
+.cashier-notice-item {
+  grid-template-columns: 80px minmax(0, 1fr) 78px 8px;
+}
+
+.cashier-notice-unread-dot {
+  width: 9px;
+  height: 9px;
+  align-self: center;
+  justify-self: end;
+  border-radius: 50%;
+}
+
+.cashier-nav-notice-dot {
+  width: 6px !important;
+  height: 6px;
+  margin-left: auto;
+  background: #71945d;
+  border-radius: 50%;
+}
+
+@media (max-width: 760px) {
+  .cashier-notice-item {
+    grid-template-columns: 42px minmax(0, 1fr) 7px;
+  }
+
+  .cashier-notice-time {
+    display: block;
+    grid-column: 2;
+  }
+
+  .cashier-notice-unread-dot {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+
+/* Bộ lọc khoảng ngày dùng trên các màn danh sách và ca làm việc. */
+.cashier-date-range-filter {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 9px;
+  color: #8d7568;
+}
+
+.cashier-date-range-filter label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 31px;
+  color: #a48b7d;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cashier-date-range-filter label span { margin: 0; }
+
+.cashier-date-range-filter input {
+  width: 124px;
+  height: 31px;
+  padding: 0 8px;
+  color: #5f4033;
+  background: #fff;
+  border: 1px solid #dfcbbb;
+  border-radius: 4px;
+  font: 500 11px Poppins, sans-serif;
+}
+
+.cashier-date-range-filter > b {
+  color: #a48b7d;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.cashier-date-range-filter > button {
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  color: #866b5c;
+  background: #fff;
+  border: 1px solid #dfcbbb;
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.cashier-date-range-filter.cashier-shift-date {
+  display: flex;
+  width: max-content;
+  margin: 0 auto 28px;
+  text-align: left;
+}
+
+/* Giữ màn Ca làm việc đúng nhịp dọc của bản thiết kế gốc.
+   Bộ lọc là một hàng, nằm giữa phần tiêu đề và các thẻ thống kê. */
+.cashier-shift-content {
+  padding-top: 42px;
+}
+
+.cashier-shift-content > .cashier-date-range-filter.cashier-shift-date {
+  align-items: center;
+  min-height: 31px;
+  margin: 0 0 37px auto;
+  white-space: nowrap;
+}
+
+.cashier-shift-content > .cashier-date-range-filter.cashier-shift-date > b {
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .cashier-date-range-filter { flex-wrap: wrap; gap: 7px; }
+  .cashier-date-range-filter input { width: 124px; }
+  .cashier-date-range-filter.cashier-shift-date { width: 100%; justify-content: center; }
 }

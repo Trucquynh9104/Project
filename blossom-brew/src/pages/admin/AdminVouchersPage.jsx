@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { getCurrentUser, logoutUser } from '../../services/authService'
+import { notifyVoucherChanged } from '../../services/notificationService'
 
 const VOUCHERS_KEY = 'blossom-vouchers'
 const ITEMS_PER_PAGE = 8
@@ -309,23 +310,24 @@ function AdminVouchersPage() {
     }
 
     if (editingId) {
-      saveVouchers(
-        vouchers.map((voucher) =>
-          voucher.id === editingId
-            ? { ...voucher, ...voucherData }
-            : voucher,
-        ),
-      )
+      const updatedVoucher = {
+        ...vouchers.find((voucher) => voucher.id === editingId),
+        ...voucherData,
+      }
+      saveVouchers(vouchers.map((voucher) => voucher.id === editingId ? updatedVoucher : voucher))
+      notifyVoucherChanged({ action: 'updated', voucher: updatedVoucher })
       setMessage('Đã cập nhật voucher.')
     } else {
+      const newVoucher = {
+        id: 'voucher-' + Date.now(),
+        usedCount: 0,
+        ...voucherData,
+      }
       saveVouchers([
         ...vouchers,
-        {
-          id: 'voucher-' + Date.now(),
-          usedCount: 0,
-          ...voucherData,
-        },
+        newVoucher,
       ])
+      notifyVoucherChanged({ action: 'created', voucher: newVoucher })
       setMessage('Đã thêm voucher.')
     }
   }
@@ -349,19 +351,23 @@ function AdminVouchersPage() {
   }
 
   function handleToggle(voucherId) {
-    saveVouchers(
-      vouchers.map((voucher) =>
-        voucher.id === voucherId
-          ? { ...voucher, active: !voucher.active }
-          : voucher,
-      ),
-    )
+    const currentVoucher = vouchers.find((voucher) => voucher.id === voucherId)
+    if (!currentVoucher) return
+
+    const updatedVoucher = { ...currentVoucher, active: !currentVoucher.active }
+    saveVouchers(vouchers.map((voucher) => voucher.id === voucherId ? updatedVoucher : voucher))
+    notifyVoucherChanged({
+      action: updatedVoucher.active ? 'activated' : 'deactivated',
+      voucher: updatedVoucher,
+    })
   }
 
   function handleDelete(voucherId) {
     if (!window.confirm('Bạn có chắc muốn xóa voucher này?')) return
 
+    const deletedVoucher = vouchers.find((voucher) => voucher.id === voucherId)
     saveVouchers(vouchers.filter((voucher) => voucher.id !== voucherId))
+    if (deletedVoucher) notifyVoucherChanged({ action: 'deleted', voucher: deletedVoucher })
     if (editingId === voucherId) resetForm()
     else setMessage('Đã xóa voucher.')
   }

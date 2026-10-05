@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logoutUser } from '../services/authService'
+import { getNotificationsForUser, initializeNotifications, subscribeNotifications } from '../services/notificationService'
 
 const navigationItems = [
   { id: 'pos', label: 'Tạo đơn tại quầy', path: '/cashier', icon: '▥' },
@@ -30,6 +32,19 @@ function CashierShell({
 }) {
   const navigate = useNavigate()
   const initials = getInitials(user?.name)
+  const notificationUserId = user?.id || ''
+  const notificationUserRole = user?.role || ''
+  const [unreadCount, setUnreadCount] = useState(() => getNotificationsForUser(user).filter((notice) => !notice.read).length)
+
+  useEffect(() => {
+    function refreshUnreadCount() {
+      initializeNotifications()
+      setUnreadCount(getNotificationsForUser(notificationUserId ? { id: notificationUserId, role: notificationUserRole } : null).filter((notice) => !notice.read).length)
+    }
+
+    refreshUnreadCount()
+    return subscribeNotifications(refreshUnreadCount)
+  }, [notificationUserId, notificationUserRole])
 
   function handleLogout() {
     logoutUser()
@@ -60,6 +75,7 @@ function CashierShell({
             >
               <span aria-hidden="true">{item.icon}</span>
               {item.label}
+              {item.id === 'notices' && unreadCount > 0 && <i aria-label={`${unreadCount} thông báo chưa đọc`} className="cashier-nav-notice-dot" />}
             </button>
           ))}
         </nav>

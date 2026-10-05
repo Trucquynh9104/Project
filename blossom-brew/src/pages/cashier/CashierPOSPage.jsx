@@ -8,6 +8,7 @@ import {
   SILVER_MIN_POINTS,
 } from '../../services/authService'
 import CashierShell from '../../components/CashierShell'
+import { notifyOrderCreated, notifyVoucherUsed } from '../../services/notificationService'
 
 const products = [
   { id: 1, name: 'Cold Brew Cam', category: 'Cà phê', price: 45000 },
@@ -289,6 +290,7 @@ function CashierPOSPage() {
             name: selectedMember.name,
             phone: selectedMember.phone,
             points: selectedMember.points,
+            memberType: selectedMember.memberType || 'account',
           }
         : null,
       status: 'Đang pha',
@@ -303,6 +305,9 @@ function CashierPOSPage() {
       'blossom-orders',
       JSON.stringify([order, ...savedOrders]),
     )
+
+    notifyOrderCreated(order)
+    if (order.voucherCode) notifyVoucherUsed({ order, voucherCode: order.voucherCode })
 
     setMessage(`Đã tạo đơn ${order.id} và chuyển sang trạng thái Đang pha.`)
     setCart([])

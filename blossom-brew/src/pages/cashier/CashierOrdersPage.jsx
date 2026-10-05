@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import CashierShell from '../../components/CashierShell'
+import DateRangeFilter from '../../components/DateRangeFilter'
 import { addMemberPoints, getCurrentUser } from '../../services/authService'
+import { notifyOrderStatusChanged, notifyPointsAwarded } from '../../services/notificationService'
+import { isInDateRange } from '../../utils/dateRange'
 
 const statusFilters = [
   'Tất cả trạng thái',
@@ -63,6 +66,8 @@ function CustomerName({ order }) {
 function CashierOrdersPage() {
   const user = getCurrentUser()
   const [filter, setFilter] = useState('Tất cả trạng thái')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [expandedOrderId, setExpandedOrderId] = useState(null)
   const [orders, setOrders] = useState(() =>
@@ -70,9 +75,11 @@ function CashierOrdersPage() {
   )
 
   const filteredOrders = useMemo(() => {
-    if (filter === 'Tất cả trạng thái') return orders
-    return orders.filter((order) => order.status === filter)
-  }, [orders, filter])
+    return orders.filter((order) => {
+      const matchesStatus = filter === 'Tất cả trạng thái' || order.status === filter
+      return matchesStatus && isInDateRange(order.createdAt, fromDate, toDate)
+    })
+  }, [orders, filter, fromDate, toDate])
 
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / ITEMS_PER_PAGE))
   const activePage = Math.min(currentPage, totalPages)
@@ -108,20 +115,32 @@ function CashierOrdersPage() {
       if (result.ok) awardedPoints = pointsToAdd
     }
 
-    const updatedOrders = orders.map((order) =>
-      order.id === id
-        ? {
-            ...order,
-            status,
-            group: getOrderGroup(status),
-            pointsAwarded: order.pointsAwarded || awardedPoints > 0,
-            earnedPoints: order.earnedPoints || awardedPoints,
-          }
-        : order,
-    )
+    const updatedOrder = {
+      ...orderToUpdate,
+      status,
+      group: getOrderGroup(status),
+      pointsAwarded: orderToUpdate.pointsAwarded || awardedPoints > 0,
+      earnedPoints: orderToUpdate.earnedPoints || awardedPoints,
+    }
+    const updatedOrders = orders.map((order) => order.id === id ? updatedOrder : order)
 
     setOrders(updatedOrders)
     localStorage.setItem('blossom-orders', JSON.stringify(updatedOrders))
+    notifyOrderStatusChanged({
+      actorRole: 'cashier',
+      order: updatedOrder,
+      previousStatus: orderToUpdate.status,
+      status,
+    })
+
+    if (awardedPoints > 0) {
+      notifyPointsAwarded({
+        actorRole: 'cashier',
+        member: updatedOrder.member,
+        orderId: updatedOrder.id,
+        points: awardedPoints,
+      })
+    }
   }
 
   function exportOrders() {
@@ -156,7 +175,19 @@ function CashierOrdersPage() {
     >
       <section className="cashier-content cashier-list-content">
         <div className="cashier-order-toolbar">
-          <span className="cashier-order-date">01/09/2026 &nbsp;–&nbsp; 30/09/2026 &nbsp;✦</span>
+          <DateRangeFilter
+            className="cashier-order-date"
+            fromDate={fromDate}
+            toDate={toDate}
+            onFromDateChange={(value) => {
+              setFromDate(value)
+              setCurrentPage(1)
+            }}
+            onToDateChange={(value) => {
+              setToDate(value)
+              setCurrentPage(1)
+            }}
+          />
           <div>
             <button className="cashier-outline-button" type="button" onClick={exportOrders}>
               Xuất file

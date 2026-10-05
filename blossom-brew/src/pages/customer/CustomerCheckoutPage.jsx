@@ -10,6 +10,7 @@ import {
 } from '../../services/authService'
 import NotificationDropdown from '../../components/NotificationDropdown'
 import CustomerAvatar from '../../components/CustomerAvatar'
+import { notifyOrderCreated, notifyVoucherUsed } from '../../services/notificationService'
 
 const navigationItems = [
   { icon: '⌂', label: 'Tổng quan', to: '/customer' },
@@ -262,8 +263,14 @@ function CustomerCheckoutPage() {
     const orders = JSON.parse(localStorage.getItem('blossom-orders') || '[]')
     localStorage.setItem('blossom-orders', JSON.stringify([order, ...orders]))
 
+    notifyOrderCreated(order)
+
     if (voucherResult.isPersonalVoucher && voucherResult.isValid) {
       consumePersonalVoucher({ userId: user.id, code: voucherCode })
+    }
+
+    if (voucherResult.isValid) {
+      notifyVoucherUsed({ order, voucherCode })
     }
 
     localStorage.removeItem('blossom-cart')

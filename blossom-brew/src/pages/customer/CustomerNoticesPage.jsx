@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import {
   getCurrentUser,
@@ -7,6 +7,14 @@ import {
 } from '../../services/authService'
 import NotificationDropdown from '../../components/NotificationDropdown'
 import CustomerAvatar from '../../components/CustomerAvatar'
+import {
+  getNotificationLabel,
+  getNotificationsForUser,
+  initializeNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  subscribeNotifications,
+} from '../../services/notificationService'
 
 const navigationItems = [
   { icon: '⌂', label: 'Tổng quan', to: '/customer' },
@@ -52,58 +60,23 @@ function getCartCount() {
   }
 }
 
-function getNoticesKey(userId) {
-  return `blossom-customer-notices-${userId}`
-}
-
-function loadNotices(userId) {
-  const key = getNoticesKey(userId)
-
-  try {
-    const saved = JSON.parse(localStorage.getItem(key) || 'null')
-    if (saved) return saved
-  } catch {
-    // Dùng dữ liệu mẫu nếu localStorage không đọc được.
-  }
-
-  const defaultNotices = [
-    {
-      id: 'welcome',
-      title: 'Chào mừng bạn đến Blossom Brew',
-      content: 'Khám phá menu và những ưu đãi dành riêng cho thành viên.',
-      time: 'Hôm nay',
-      read: false,
-      to: '/customer/menu',
-    },
-    {
-      id: 'voucher',
-      title: 'Ưu đãi thành viên',
-      content: 'Theo dõi điểm và đổi voucher trực tiếp trên trang Điểm & voucher.',
-      time: 'Hôm nay',
-      read: false,
-      to: '/customer/points',
-    },
-    {
-      id: 'history',
-      title: 'Theo dõi đơn hàng dễ dàng',
-      content: 'Mọi trạng thái xử lý đơn sẽ được cập nhật tại Lịch sử đơn hàng.',
-      time: 'Hôm nay',
-      read: true,
-      to: '/customer/history',
-    },
-  ]
-
-  localStorage.setItem(key, JSON.stringify(defaultNotices))
-  return defaultNotices
-}
-
 function CustomerNoticesPage() {
   const navigate = useNavigate()
   const user = getCurrentUser()
-  const [notices, setNotices] = useState(() =>
-    user ? loadNotices(user.id) : [],
-  )
+  const notificationUserId = user?.id || ''
+  const notificationUserRole = user?.role || ''
+  const [notices, setNotices] = useState(() => getNotificationsForUser(user))
   const [currentPage, setCurrentPage] = useState(1)
+
+  useEffect(() => {
+    function refreshNotices() {
+      initializeNotifications()
+      setNotices(getNotificationsForUser(notificationUserId ? { id: notificationUserId, role: notificationUserRole } : null))
+    }
+
+    refreshNotices()
+    return subscribeNotifications(refreshNotices)
+  }, [notificationUserId, notificationUserRole])
 
   if (!user) {
     return <Navigate to="/login" replace />
@@ -125,21 +98,8 @@ function CustomerNoticesPage() {
   )
   const membershipLabel = getMembershipLabel(user.points)
 
-  function saveNotices(updatedNotices) {
-    setNotices(updatedNotices)
-    localStorage.setItem(
-      getNoticesKey(user.id),
-      JSON.stringify(updatedNotices),
-    )
-  }
-
   function openNotice(notice) {
-    saveNotices(
-      notices.map((item) =>
-        item.id === notice.id ? { ...item, read: true } : item,
-      ),
-    )
-
+    markNotificationRead(user, notice.id)
     if (notice.to) navigate(notice.to)
   }
 
@@ -212,9 +172,7 @@ function CustomerNoticesPage() {
               className="outline-button"
               disabled={!unreadCount}
               type="button"
-              onClick={() =>
-                saveNotices(notices.map((item) => ({ ...item, read: true })))
-              }
+              onClick={() => markAllNotificationsRead(user)}
             >
               Đánh dấu đã đọc
             </button>
@@ -237,7 +195,7 @@ function CustomerNoticesPage() {
                   <small>{notice.content}</small>
                 </span>
 
-                <time>{notice.time}</time>
+                <time>{getNotificationLabel(notice)}</time>
                 {!notice.read && <i className="bb-notice-unread-dot" />}
               </button>
             ))}

@@ -1,3 +1,5 @@
+import { notifyOrderCreated } from './notificationService'
+
 const ORDERS_KEY = 'blossom-orders'
 
 export function createCustomerOrder({
@@ -54,6 +56,8 @@ export function createCustomerOrder({
     ORDERS_KEY,
     JSON.stringify([order, ...orders]),
   )
+
+  notifyOrderCreated(order)
 
   return {
     ok: true,

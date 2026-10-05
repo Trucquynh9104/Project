@@ -5,6 +5,7 @@ import {
   getCurrentUser,
   logoutUser,
 } from '../../services/authService'
+import { notifyOrderStatusChanged, notifyPointsAwarded } from '../../services/notificationService'
 
 const statusFilters = [
   { value: 'all', label: 'Tất cả trạng thái' },
@@ -187,20 +188,32 @@ function AdminOrdersPage() {
       if (result.ok) awardedPoints = pointsToAdd
     }
 
-    const updatedOrders = orders.map((order) =>
-      order.id === orderId
-        ? {
-            ...order,
-            status,
-            group: status === 'Hoàn tất' ? 'completed' : status === 'Đã hủy' ? 'cancelled' : 'incomplete',
-            pointsAwarded: order.pointsAwarded || awardedPoints > 0,
-            earnedPoints: order.earnedPoints || awardedPoints,
-          }
-        : order,
-    )
+    const updatedOrder = {
+      ...orderToUpdate,
+      status,
+      group: status === 'Hoàn tất' ? 'completed' : status === 'Đã hủy' ? 'cancelled' : 'incomplete',
+      pointsAwarded: orderToUpdate.pointsAwarded || awardedPoints > 0,
+      earnedPoints: orderToUpdate.earnedPoints || awardedPoints,
+    }
+    const updatedOrders = orders.map((order) => order.id === orderId ? updatedOrder : order)
 
     localStorage.setItem('blossom-orders', JSON.stringify(updatedOrders))
     setOrders(updatedOrders)
+    notifyOrderStatusChanged({
+      actorRole: 'admin',
+      order: updatedOrder,
+      previousStatus: orderToUpdate.status,
+      status,
+    })
+
+    if (awardedPoints > 0) {
+      notifyPointsAwarded({
+        actorRole: 'admin',
+        member: updatedOrder.member,
+        orderId: updatedOrder.id,
+        points: awardedPoints,
+      })
+    }
   }
 
   function exportOrders() {

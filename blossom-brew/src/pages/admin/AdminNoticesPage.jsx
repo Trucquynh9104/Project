@@ -1,8 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { getCurrentUser, logoutUser } from '../../services/authService'
+import {
+  getNotificationLabel,
+  getNotificationsForUser,
+  initializeNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  subscribeNotifications,
+} from '../../services/notificationService'
 
-const NOTICES_KEY = 'blossom-admin-notices'
 const ITEMS_PER_PAGE = 8
 
 function ListFooter({ currentPage, itemLabel, onPageChange, totalItems, totalPages }) {
@@ -19,55 +26,23 @@ function ListFooter({ currentPage, itemLabel, onPageChange, totalItems, totalPag
   )
 }
 
-const defaultNotices = [
-  {
-    id: 'admin-notice-1',
-    title: 'Đơn hàng mới cần theo dõi',
-    content: 'Có đơn hàng mới được tạo và đang chờ xác nhận.',
-    time: 'Vừa xong',
-    read: false,
-  },
-  {
-    id: 'admin-notice-2',
-    title: 'Voucher sắp hết hạn',
-    content: 'Voucher BBSILVER sẽ hết hạn trong tháng này.',
-    time: '30 phút trước',
-    read: false,
-  },
-  {
-    id: 'admin-notice-3',
-    title: 'Cập nhật điểm thành viên',
-    content: 'Điểm của thành viên được cộng sau khi đơn hàng hoàn tất.',
-    time: 'Hôm nay',
-    read: true,
-  },
-  {
-    id: 'admin-notice-4',
-    title: 'Báo cáo bán hàng đã sẵn sàng',
-    content: 'Bạn có thể xem thống kê doanh thu tại trang Báo cáo.',
-    time: 'Hôm qua',
-    read: true,
-  },
-]
-
-function loadNotices() {
-  try {
-    const saved = localStorage.getItem(NOTICES_KEY)
-
-    if (saved) return JSON.parse(saved)
-  } catch {
-    // Dùng dữ liệu mẫu nếu localStorage lỗi.
-  }
-
-  localStorage.setItem(NOTICES_KEY, JSON.stringify(defaultNotices))
-  return defaultNotices
-}
-
 function AdminNoticesPage() {
   const navigate = useNavigate()
   const user = getCurrentUser()
-  const [notices, setNotices] = useState(loadNotices)
+  const notificationUserId = user?.id || ''
+  const notificationUserRole = user?.role || ''
+  const [notices, setNotices] = useState(() => getNotificationsForUser(user))
   const [currentPage, setCurrentPage] = useState(1)
+
+  useEffect(() => {
+    function refreshNotices() {
+      initializeNotifications()
+      setNotices(getNotificationsForUser(notificationUserId ? { id: notificationUserId, role: notificationUserRole } : null))
+    }
+
+    refreshNotices()
+    return subscribeNotifications(refreshNotices)
+  }, [notificationUserId, notificationUserRole])
 
   const totalPages = Math.max(1, Math.ceil(notices.length / ITEMS_PER_PAGE))
   const activePage = Math.min(currentPage, totalPages)
@@ -106,26 +81,9 @@ function AdminNoticesPage() {
     { icon: '○', label: 'Thông tin cá nhân', to: '/admin/profile' },
   ]
 
-  function saveNotices(updatedNotices) {
-    setNotices(updatedNotices)
-    localStorage.setItem(NOTICES_KEY, JSON.stringify(updatedNotices))
-  }
-
-  function markRead(id) {
-    saveNotices(
-      notices.map((notice) =>
-        notice.id === id ? { ...notice, read: true } : notice,
-      ),
-    )
-  }
-
-  function markAllRead() {
-    saveNotices(
-      notices.map((notice) => ({
-        ...notice,
-        read: true,
-      })),
-    )
+  function openNotice(notice) {
+    markNotificationRead(user, notice.id)
+    if (notice.to) navigate(notice.to)
   }
 
   function handleLogout() {
@@ -198,7 +156,7 @@ function AdminNoticesPage() {
               className="admin-export-button"
               type="button"
               disabled={!unreadCount}
-              onClick={markAllRead}
+              onClick={() => markAllNotificationsRead(user)}
             >
               Đánh dấu đã đọc
             </button>
@@ -214,7 +172,7 @@ function AdminNoticesPage() {
                 }
                 key={notice.id}
                 type="button"
-                onClick={() => markRead(notice.id)}
+                onClick={() => openNotice(notice)}
               >
                 <span className="admin-notice-number">
                   {String((activePage - 1) * ITEMS_PER_PAGE + index + 1).padStart(2, '0')}
@@ -225,7 +183,7 @@ function AdminNoticesPage() {
                   <small>{notice.content}</small>
                 </span>
 
-                <span className="admin-notice-time">{notice.time}</span>
+                <span className="admin-notice-time">{getNotificationLabel(notice)}</span>
 
                 {!notice.read && <i className="admin-unread-dot" />}
               </button>

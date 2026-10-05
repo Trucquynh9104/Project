@@ -1,69 +1,59 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getCurrentUser } from '../services/authService'
+import {
+  getNotificationLabel,
+  getNotificationsForUser,
+  initializeNotifications,
+  markNotificationRead,
+  subscribeNotifications,
+} from '../services/notificationService'
 
-const initialNotices = [
-  {
-    id: 1,
-    title: 'Đơn hàng mới đã được tiếp nhận',
-    description: 'Cửa hàng đang chuẩn bị món cho bạn.',
-    time: 'Vừa xong',
-    read: false,
-  },
-  {
-    id: 2,
-    title: 'Voucher BBSILVER sẵn sàng sử dụng',
-    description: 'Giảm 20%, tối đa 30.000đ cho đơn từ 80.000đ.',
-    time: '09:00',
-    read: false,
-  },
-  {
-    id: 3,
-    title: 'Bạn vừa nhận 52 điểm',
-    description: 'Điểm tích luỹ đã được cộng vào tài khoản.',
-    time: '24/09',
-    read: true,
-  },
-  {
-    id: 4,
-    title: 'Cold Brew Cam đã trở lại',
-    description: 'Món uống yêu thích đã có trong menu theo mùa.',
-    time: '22/09',
-    read: true,
-  },
-  {
-    id: 5,
-    title: 'Chào mừng bạn đến với Blossom Brew',
-    description: 'Khám phá ưu đãi dành riêng cho thành viên mới.',
-    time: '20/09',
-    read: true,
-  },
-]
+function getNoticesRoute(role) {
+  if (role === 'cashier') return '/cashier/notices'
+  if (role === 'admin') return '/admin/notices'
+  return '/customer/notices'
+}
 
 function NotificationDropdown() {
   const navigate = useNavigate()
+  const user = getCurrentUser()
+  const notificationUserId = user?.id || ''
+  const notificationUserRole = user?.role || ''
   const [isOpen, setIsOpen] = useState(false)
-  const [notices, setNotices] = useState(initialNotices)
+  const [notices, setNotices] = useState(() => getNotificationsForUser(user))
+
+  useEffect(() => {
+    function refreshNotices() {
+      initializeNotifications()
+      setNotices(getNotificationsForUser(notificationUserId ? { id: notificationUserId, role: notificationUserRole } : null))
+    }
+
+    refreshNotices()
+    return subscribeNotifications(refreshNotices)
+  }, [notificationUserId, notificationUserRole])
+
+  if (!user) return null
 
   const unreadCount = notices.filter((notice) => !notice.read).length
 
-  function markRead(id) {
-    setNotices((current) =>
-      current.map((notice) =>
-        notice.id === id ? { ...notice, read: true } : notice,
-      ),
-    )
+  function openNotice(notice) {
+    markNotificationRead(user, notice.id)
+    setIsOpen(false)
+    navigate(notice.to || getNoticesRoute(user.role))
   }
 
   function viewAll() {
     setIsOpen(false)
-    navigate('/customer/notices')
+    navigate(getNoticesRoute(user.role))
   }
 
   return (
     <div className="bb-notification-dropdown">
       <button
+        aria-label="Mở thông báo"
         className="bb-notification-trigger"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((current) => !current)}
         type="button"
       >
         <span>🔔</span>
@@ -78,34 +68,25 @@ function NotificationDropdown() {
           </div>
 
           <div className="bb-notification-preview-list">
-            {notices.map((notice) => (
+            {notices.slice(0, 5).map((notice) => (
               <button
-                className={
-                  notice.read
-                    ? 'bb-notification-preview'
-                    : 'bb-notification-preview unread'
-                }
+                className={notice.read ? 'bb-notification-preview' : 'bb-notification-preview unread'}
                 key={notice.id}
-                onClick={() => markRead(notice.id)}
+                onClick={() => openNotice(notice)}
                 type="button"
               >
                 {!notice.read && <i className="bb-notification-item-dot" />}
-
                 <span>
                   <strong>{notice.title}</strong>
-                  <small>{notice.description}</small>
+                  <small>{notice.content}</small>
                 </span>
-
-                <time>{notice.time}</time>
+                <time>{getNotificationLabel(notice)}</time>
               </button>
             ))}
+            {!notices.length && <p className="bb-notification-empty">Chưa có thông báo mới.</p>}
           </div>
 
-          <button
-            className="bb-view-all-notices"
-            onClick={viewAll}
-            type="button"
-          >
+          <button className="bb-view-all-notices" onClick={viewAll} type="button">
             Xem tất cả thông báo →
           </button>
         </section>

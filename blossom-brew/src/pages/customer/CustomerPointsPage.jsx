@@ -10,6 +10,7 @@ import {
 } from '../../services/authService'
 import NotificationDropdown from '../../components/NotificationDropdown'
 import CustomerAvatar from '../../components/CustomerAvatar'
+import { notifyPointsRedeemed } from '../../services/notificationService'
 
 const VOUCHERS_KEY = 'blossom-vouchers'
 const SILVER_POINTS = SILVER_MIN_POINTS
@@ -221,6 +222,7 @@ function CustomerPointsPage() {
     setUser(result.user)
     setSelectedVoucher(null)
     localStorage.setItem('blossom-selected-voucher', result.voucher.code)
+    notifyPointsRedeemed({ user: result.user, voucher: result.voucher })
     setMessage(`${result.message} Đang chuyển đến menu.`)
 
     window.setTimeout(() => {
