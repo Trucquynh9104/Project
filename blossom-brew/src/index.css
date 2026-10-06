@@ -3935,6 +3935,77 @@ h2 {
   margin-top: 4px;
 }
 
+.cashier-status-text,
+.admin-order-status-text {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 6px 9px;
+  font-size: 11px;
+}
+
+.cashier-status-text.incomplete,
+.admin-order-status-text.pending { color: #98765e; background: #f7efe4; }
+.cashier-status-text.processing,
+.admin-order-status-text.processing { color: #9a7355; background: #f5eee3; }
+.cashier-status-text.completed,
+.admin-order-status-text.completed { color: #719164; background: #ebf4e7; }
+.cashier-status-text.cancelled,
+.admin-order-status-text.cancelled { color: #b67871; background: #f9eae8; }
+
+.cashier-order-status-action,
+.admin-order-status-action {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid #ead9ca;
+}
+
+.cashier-order-status-action label,
+.admin-order-status-action h3 {
+  color: #806858;
+  display: grid;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  margin: 0;
+}
+
+.cashier-order-status-action select,
+.cashier-order-status-action textarea,
+.admin-order-status-action select,
+.admin-order-status-action textarea {
+  border: 1px solid #dfcfc3;
+  background: #fff;
+  color: #57362a;
+  font: inherit;
+  padding: 10px;
+}
+
+.cashier-order-status-action textarea,
+.admin-order-status-action textarea { min-height: 78px; resize: vertical; }
+.cashier-order-status-action button,
+.admin-order-status-action button { width: max-content; }
+
+.cashier-order-status-action > p { color: #806858; font-size: 11px; font-weight: 700; letter-spacing: .04em; margin: 0; }
+.cashier-status-buttons,
+.admin-status-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+.cashier-next-status-button,
+.admin-next-status-button { background: #6d4b3a; border: 0; color: #fff; cursor: pointer; font: inherit; padding: 10px 13px; }
+.cashier-cancel-status-button,
+.admin-cancel-status-button { background: #fff; border: 1px solid #c8867e; color: #a2605b; cursor: pointer; font: inherit; padding: 9px 12px; }
+.cashier-next-status-button.is-selected,
+.admin-next-status-button.is-selected { outline: 2px solid #4f3327; outline-offset: 2px; }
+.cashier-cancel-status-button.is-selected,
+.admin-cancel-status-button.is-selected { outline: 2px solid #a2605b; outline-offset: 2px; }
+.admin-order-status-action { margin-top: 18px; }
+.admin-order-status-action > button { background: #6d4b3a; border: 0; color: #fff; cursor: pointer; font: inherit; padding: 10px 13px; }
+.cashier-status-message { color: #806858; margin: 0; }
+.cashier-cancellation-note,
+.admin-cancellation-note { grid-column: 1 / -1; color: #a2605b; margin: 0; }
+
 .cashier-orders-empty {
   margin: 0;
   padding: 32px;
@@ -4065,7 +4136,7 @@ h2 {
   align-items: start;
   padding: 20px 0;
   color: #583a2d;
-  background: transparent;
+  background: #fffefc;
   border: 0;
   border-bottom: 1px solid #ead9ca;
   text-align: left;
@@ -6393,7 +6464,10 @@ h2 {
 .guest-nav button { position: relative; padding: 7px 0 8px; color: #8c7467; background: transparent; border: 0; font: 400 13px/1 'Poppins', sans-serif; }
 .guest-nav button.is-active { color: #4b2e24; }
 .guest-nav button.is-active::after { position: absolute; right: 0; bottom: 0; left: 0; height: 1px; content: ''; background: #4b2e24; }
+.guest-account-actions { display: flex; align-items: center; justify-self: end; gap: 10px; }
 .guest-register-button { justify-self: end; }
+.guest-login-button { min-height: 40px; padding: 0 17px; color: #4b2e24; background: #fffefc; border: 1px solid #d9c3b4; border-radius: 8px; font: 500 13px/1 'Poppins', sans-serif; cursor: pointer; transition: transform 160ms ease, box-shadow 160ms ease; }
+.guest-login-button:hover { color: #fff; background: #4b2e24; border-color: #4b2e24; }
 
 .guest-primary-button, .guest-outline-button { min-height: 40px; padding: 0 17px; border-radius: 8px; font: 500 13px/1 'Poppins', sans-serif; transition: transform 160ms ease, box-shadow 160ms ease; }
 .guest-primary-button { color: #fff; background: #4b2e24; border: 1px solid #4b2e24; }
@@ -6909,8 +6983,8 @@ h2 {
 .cashier-orders-table { border-color: #e7d7cb; }
 
 .cashier-orders-row {
-  grid-template-columns: 1.1fr 2.05fr 0.8fr 1.15fr 1.1fr;
-  gap: 18px;
+  grid-template-columns: 1.05fr 1.9fr .8fr .85fr 1.15fr 1fr;
+  gap: 14px;
   min-height: 66px;
   padding: 13px 20px;
   font-size: 12px;
@@ -6924,6 +6998,12 @@ h2 {
   padding: 6px 9px;
   border: 0;
   font-size: 10px;
+}
+
+.cashier-order-total {
+  color: #6c4a3b;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .cashier-detail-button {
@@ -7088,12 +7168,12 @@ h2 {
 .cashier-notices-page,
 .cashier-notices-page .cashier-main,
 .cashier-notices-page .cashier-content {
-  background: #fdfaf7;
+  background: #f8f2ec;
 }
 
 .cashier-notices-page .cashier-topbar {
-  background: #fff;
-  border-bottom: 1px solid #e8dcd1;
+  background: #fcf8f4;
+  border-bottom-color: #eaded3;
 }
 
 .cashier-notices-page .cashier-topbar-copy h1 { color: #45342f; }
@@ -7268,6 +7348,45 @@ h2 {
   font-size: 11px;
 }
 
+.cashier-profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 24px;
+}
+
+.cashier-profile-actions .cashier-save-button {
+  margin: 0;
+}
+
+.cashier-profile-action {
+  min-height: 39px;
+  padding: 9px 13px;
+  color: #765747;
+  background: #fffefc;
+  border: 1px solid #ddc8ba;
+  border-radius: 5px;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.cashier-profile-action:hover {
+  color: #fff;
+  background: #76503e;
+  border-color: #76503e;
+}
+
+.cashier-profile-logout-button {
+  color: #a45449;
+  border-color: #dfbbb4;
+}
+
+.cashier-profile-logout-button:hover {
+  background: #a45449;
+  border-color: #a45449;
+}
+
 @media (max-width: 1050px) {
   .cashier-dashboard { grid-template-columns: 215px minmax(0, 1fr); }
   .cashier-content,
@@ -7295,7 +7414,7 @@ h2 {
   .cashier-order-toolbar > div { justify-content: space-between; }
   .cashier-order-date { margin-right: 0; }
   .cashier-orders-table { overflow-x: auto; }
-  .cashier-orders-row { min-width: 760px; }
+  .cashier-orders-row { min-width: 880px; }
   .cashier-shift-summary,
   .cashier-shift-controls,
   .cashier-profile-layout,
@@ -7460,7 +7579,7 @@ h2 {
 }
 
 .cashier-notice-list {
-  background: transparent;
+  background: #fffefc;
   border: 0;
   border-top: 1px solid #ead9ca;
 }
@@ -7469,12 +7588,12 @@ h2 {
   min-height: 0;
   grid-template-columns: 80px minmax(0, 1fr) 64px 9px;
   padding: 20px 0;
-  background: transparent;
+  background: #fffefc;
   border-color: #ead9ca;
 }
 
 .cashier-notice-item.unread {
-  background: transparent;
+  background: #fffefc;
 }
 
 .cashier-notice-number {
@@ -7505,7 +7624,7 @@ h2 {
 .cashier-notice-list .cashier-list-footer {
   min-height: 40px;
   padding: 0 12px;
-  background: transparent;
+  background: #fffefc;
   border: 1px solid #e1cdbb;
 }
 
@@ -7594,8 +7713,57 @@ h2 {
   font-size: 12px;
 }
 
+/* Trang chủ đã đăng nhập: dùng bố cục Guest trong khung sidebar của từng role. */
+.role-home-content {
+  max-width: none;
+  padding-top: 48px;
+  padding-bottom: 70px;
+}
+
+.role-guest-home {
+  width: min(1172px, 100%);
+}
+
+.role-guest-home .guest-hero {
+  min-height: 430px;
+}
+
+.role-guest-home .guest-hero-copy {
+  padding-top: 52px;
+  padding-bottom: 48px;
+}
+
+.role-guest-home .guest-hero-art { min-height: 428px; }
+.role-guest-home .guest-menu-section { padding-top: 45px; }
+
+.bb-content.role-home-content { background: #fdfaf7; }
+.cashier-content.role-home-content { background: #fdfaf7; }
+.admin-role-home .admin-content { max-width: none; background: #fdfaf7; }
+
+@media (max-width: 800px) {
+  .role-home-content { padding-top: 28px; }
+  .role-guest-home .guest-hero-art { min-height: 330px; }
+}
+
 @media (max-width: 760px) {
   .cashier-date-range-filter { flex-wrap: wrap; gap: 7px; }
   .cashier-date-range-filter input { width: 124px; }
   .cashier-date-range-filter.cashier-shift-date { width: 100%; justify-content: center; }
+}
+
+/* Hiệu ứng dùng chung cho mọi button: rõ phản hồi khi nhấn, không thay đổi layout. */
+button:not(:disabled) {
+  transition: transform 120ms ease, box-shadow 120ms ease, outline-color 120ms ease;
+}
+
+button:not(:disabled):active {
+  transform: translateY(1px);
+  outline: 2px solid #6d4b3a;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(109, 75, 58, .12);
+}
+
+button:not(:disabled):focus-visible {
+  outline: 2px solid #6d4b3a;
+  outline-offset: 3px;
 }

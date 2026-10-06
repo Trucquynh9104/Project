@@ -6895,6 +6895,10 @@ h2 {
 .cashier-order-toolbar > div { display: flex; align-items: center; gap: 12px; }
 .cashier-order-date { margin-right: auto; color: #a28b7d; font-size: 12px; }
 
+.cashier-date-range-filter.cashier-order-date {
+  margin-right: auto;
+}
+
 .cashier-order-toolbar select {
   min-height: 40px;
   min-width: 150px;
@@ -7084,7 +7088,7 @@ h2 {
 .cashier-notices-page,
 .cashier-notices-page .cashier-main,
 .cashier-notices-page .cashier-content {
-  background: #fdfaf7;
+  background: #f8f2ec;
 }
 
 .cashier-notices-page .cashier-topbar {
@@ -7306,7 +7310,11 @@ h2 {
 .bb-notice-unread-dot,
 .cashier-notice-unread-dot,
 .admin-unread-dot {
+  display: block !important;
+  min-width: 9px;
+  min-height: 9px;
   background: #71945d;
+  box-shadow: 0 0 0 2px #fdfaf7;
 }
 
 .bb-notification-empty {
@@ -7322,8 +7330,8 @@ h2 {
 }
 
 .cashier-notice-unread-dot {
-  width: 7px;
-  height: 7px;
+  width: 9px;
+  height: 9px;
   align-self: center;
   justify-self: end;
   border-radius: 50%;
@@ -7351,4 +7359,275 @@ h2 {
     grid-column: 3;
     grid-row: 1;
   }
+}
+
+/* Bộ lọc khoảng ngày dùng trên các màn danh sách và ca làm việc. */
+.cashier-date-range-filter {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 9px;
+  color: #8d7568;
+}
+
+.cashier-date-range-filter label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 31px;
+  color: #a48b7d;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cashier-date-range-filter label span { margin: 0; }
+
+.cashier-date-range-filter input {
+  width: 124px;
+  height: 31px;
+  padding: 0 8px;
+  color: #5f4033;
+  background: #fff;
+  border: 1px solid #dfcbbb;
+  border-radius: 4px;
+  font: 500 11px Poppins, sans-serif;
+}
+
+.cashier-date-range-filter > b {
+  color: #a48b7d;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.cashier-date-range-filter > button {
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  color: #866b5c;
+  background: #fff;
+  border: 1px solid #dfcbbb;
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.cashier-date-range-filter.cashier-shift-date {
+  display: flex;
+  width: max-content;
+  margin: 0 auto 28px;
+  text-align: left;
+}
+
+/* Giữ màn Ca làm việc đúng nhịp dọc của bản thiết kế gốc.
+   Bộ lọc là một hàng, nằm giữa phần tiêu đề và các thẻ thống kê. */
+.cashier-shift-content {
+  padding-top: 42px;
+}
+
+.cashier-shift-content > .cashier-date-range-filter.cashier-shift-date {
+  align-items: center;
+  min-height: 31px;
+  margin: 0 0 37px auto;
+  white-space: nowrap;
+}
+
+.cashier-shift-content > .cashier-date-range-filter.cashier-shift-date > b {
+  margin: 0;
+}
+
+/* Màn Thông báo thu ngân: khớp khung danh sách hẹp và nhịp dọc của Figma. */
+.cashier-notices-content {
+  padding-top: 52px;
+}
+
+.cashier-notices-toolbar,
+.cashier-notice-list {
+  width: 100%;
+  max-width: 850px;
+}
+
+.cashier-notices-toolbar {
+  margin-bottom: 14px;
+}
+
+.cashier-notices-message {
+  max-width: 850px;
+  margin: -4px 0 12px;
+  color: #71945d;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cashier-notice-list {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid #ead9ca;
+}
+
+.cashier-notice-item {
+  min-height: 0;
+  grid-template-columns: 80px minmax(0, 1fr) 64px 9px;
+  padding: 20px 0;
+  background: transparent;
+  border-color: #ead9ca;
+}
+
+.cashier-notice-item.unread {
+  background: transparent;
+}
+
+.cashier-notice-number {
+  color: #c89a72;
+  font-size: 24px;
+}
+
+.cashier-notice-copy strong {
+  color: #583a2d;
+  font-size: 14px;
+}
+
+.cashier-notice-copy small {
+  color: #9d8779;
+  font-size: 12px;
+}
+
+.cashier-notice-time b {
+  color: #9d8779;
+  font-size: 11px;
+}
+
+.cashier-notice-time small {
+  color: #695d5a;
+  font-size: 9px;
+}
+
+.cashier-notice-list .cashier-list-footer {
+  min-height: 40px;
+  padding: 0 12px;
+  background: transparent;
+  border: 1px solid #e1cdbb;
+}
+
+/* Lịch sử ca làm việc */
+.cashier-shift-history {
+  margin-top: 22px;
+  border: 1px solid #e8d8cc;
+  background: #fffefc;
+}
+
+.cashier-shift-history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 19px 24px;
+  border-bottom: 1px solid #eee2d9;
+}
+
+.cashier-shift-history-heading p {
+  margin: 0 0 4px;
+  color: #a58c7f;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cashier-shift-history-heading h2 {
+  margin: 0;
+  color: #4b2e24;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 25px;
+}
+
+.cashier-shift-history-heading > span {
+  padding: 5px 10px;
+  color: #765747;
+  background: #f6eee7;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cashier-shift-history-table { overflow-x: auto; }
+
+.cashier-shift-history-row {
+  min-width: 760px;
+  display: grid;
+  grid-template-columns: 1.35fr 1fr 1.35fr 1fr 0.8fr;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  color: #765f54;
+  border-bottom: 1px solid #f0e6df;
+  font-size: 11px;
+}
+
+.cashier-shift-history-row:last-child { border-bottom: 0; }
+
+.cashier-shift-history-labels {
+  color: #aa9184;
+  background: #fcf8f4;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.cashier-shift-history-row b { color: #563428; font-size: 12px; }
+
+.cashier-shift-history-row i {
+  width: max-content;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.cashier-shift-history-row i.open { color: #557544; background: #edf5e8; }
+.cashier-shift-history-row i.closed { color: #8c5d4e; background: #f7ece7; }
+
+.cashier-shift-history-empty {
+  margin: 0;
+  padding: 22px 24px;
+  color: #a58c7f;
+  font-size: 12px;
+}
+
+/* Trang chủ đã đăng nhập: dùng bố cục Guest trong khung sidebar của từng role. */
+.role-home-content {
+  max-width: none;
+  padding-top: 48px;
+  padding-bottom: 70px;
+}
+
+.role-guest-home {
+  width: min(1172px, 100%);
+}
+
+.role-guest-home .guest-hero {
+  min-height: 430px;
+}
+
+.role-guest-home .guest-hero-copy {
+  padding-top: 52px;
+  padding-bottom: 48px;
+}
+
+.role-guest-home .guest-hero-art { min-height: 428px; }
+.role-guest-home .guest-menu-section { padding-top: 45px; }
+
+.bb-content.role-home-content { background: #fdfaf7; }
+.cashier-content.role-home-content { background: #fdfaf7; }
+.admin-role-home .admin-content { max-width: none; background: #fdfaf7; }
+
+@media (max-width: 800px) {
+  .role-home-content { padding-top: 28px; }
+  .role-guest-home .guest-hero-art { min-height: 330px; }
+}
+
+@media (max-width: 760px) {
+  .cashier-date-range-filter { flex-wrap: wrap; gap: 7px; }
+  .cashier-date-range-filter input { width: 124px; }
+  .cashier-date-range-filter.cashier-shift-date { width: 100%; justify-content: center; }
 }

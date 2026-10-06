@@ -69,13 +69,22 @@ function GuestMenu() {
             </button>
           </nav>
 
-          <button
-            className="guest-primary-button guest-register-button"
-            type="button"
-            onClick={() => navigate('/register')}
-          >
-            Đăng ký
-          </button>
+          <div className="guest-account-actions">
+            <button
+              className="guest-login-button"
+              type="button"
+              onClick={() => navigate('/login')}
+            >
+              Đăng nhập
+            </button>
+            <button
+              className="guest-primary-button guest-register-button"
+              type="button"
+              onClick={() => navigate('/register')}
+            >
+              Đăng ký
+            </button>
+          </div>
         </div>
       </header>
 

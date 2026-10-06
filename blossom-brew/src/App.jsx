@@ -13,11 +13,13 @@ import CustomerNoticesPage from './pages/customer/CustomerNoticesPage'
 import CustomerProfilePage from './pages/customer/CustomerProfilePage'
 import CustomerReviewPage from './pages/customer/CustomerReviewPage'
 import CashierPOSPage from './pages/cashier/CashierPOSPage'
+import CashierHomePage from './pages/cashier/CashierHomePage'
 import CashierOrdersPage from './pages/cashier/CashierOrdersPage'
 import CashierShiftPage from './pages/cashier/CashierShiftPage'
 import CashierNoticesPage from './pages/cashier/CashierNoticesPage'
 import CashierProfilePage from './pages/cashier/CashierProfilePage'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
+import AdminHomePage from './pages/admin/AdminHomePage'
 import AdminOrdersPage from './pages/admin/AdminOrdersPage'
 import AdminProductsPage from './pages/admin/AdminProductsPage'
 import AdminVouchersPage from './pages/admin/AdminVouchersPage'
@@ -45,11 +47,13 @@ function App() {
       <Route path="/customer/profile" element={<CustomerProfilePage />} />
       <Route path="/customer/review" element={<CustomerReviewPage />} />
       <Route path="/cashier" element={<CashierPOSPage />} />
+      <Route path="/cashier/home" element={<CashierHomePage />} />
       <Route path="/cashier/orders" element={<CashierOrdersPage />} />
       <Route path="/cashier/shift" element={<CashierShiftPage />} />
       <Route path="/cashier/notices" element={<CashierNoticesPage />} />
       <Route path="/cashier/profile" element={<CashierProfilePage />} />
       <Route path="/admin" element={<AdminDashboardPage />} />
+      <Route path="/admin/home" element={<AdminHomePage />} />
       <Route path="/admin/orders" element={<AdminOrdersPage />} />
       <Route path="/admin/products" element={<AdminProductsPage />} />
       <Route path="/admin/vouchers" element={<AdminVouchersPage />} />

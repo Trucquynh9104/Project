@@ -86,6 +86,10 @@ function AdminNoticesPage() {
     if (notice.to) navigate(notice.to)
   }
 
+  function handleMarkAllRead() {
+    setNotices(markAllNotificationsRead(user))
+  }
+
   function handleLogout() {
     logoutUser()
     navigate('/')
@@ -97,7 +101,7 @@ function AdminNoticesPage() {
         <button
           className="admin-brand"
           type="button"
-          onClick={() => navigate('/admin')}
+          onClick={() => navigate('/admin/home')}
         >
           <span>B</span>
           Blossom Brew
@@ -156,7 +160,7 @@ function AdminNoticesPage() {
               className="admin-export-button"
               type="button"
               disabled={!unreadCount}
-              onClick={() => markAllNotificationsRead(user)}
+              onClick={handleMarkAllRead}
             >
               Đánh dấu đã đọc
             </button>

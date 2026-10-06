@@ -6,6 +6,7 @@ import {
   logoutUser,
 } from '../../services/authService'
 import { notifyOrderStatusChanged, notifyPointsAwarded } from '../../services/notificationService'
+import { getNextOrderStatuses, saveOrderStatus } from '../../services/orderService'
 
 const statusFilters = [
   { value: 'all', label: 'Tất cả trạng thái' },
@@ -91,6 +92,9 @@ function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedOrder, setSelectedOrder] = useState(null)
+  const [nextStatus, setNextStatus] = useState('')
+  const [cancellationReason, setCancellationReason] = useState('')
+  const [statusMessage, setStatusMessage] = useState('')
 
   const filteredOrders = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLowerCase()
@@ -158,6 +162,9 @@ function AdminOrdersPage() {
 
   function openOrderDetail(order) {
     setSelectedOrder(order)
+    setNextStatus('')
+    setCancellationReason('')
+    setStatusMessage('')
     navigate(`/admin/orders?order=${encodeURIComponent(order.id)}`)
   }
 
@@ -169,6 +176,17 @@ function AdminOrdersPage() {
   function updateStatus(orderId, status) {
     const orderToUpdate = orders.find((order) => order.id === orderId)
     if (!orderToUpdate) return
+
+    const savedStatus = saveOrderStatus({
+      orderId,
+      status,
+      actor: user,
+      cancellationReason,
+    })
+    if (!savedStatus.ok) {
+      setStatusMessage(savedStatus.message)
+      return
+    }
 
     const pointsToAdd = Math.floor(Number(orderToUpdate.total || 0) / 20000)
     const shouldAwardPoints =
@@ -189,16 +207,18 @@ function AdminOrdersPage() {
     }
 
     const updatedOrder = {
-      ...orderToUpdate,
-      status,
-      group: status === 'Hoàn tất' ? 'completed' : status === 'Đã hủy' ? 'cancelled' : 'incomplete',
+      ...savedStatus.order,
       pointsAwarded: orderToUpdate.pointsAwarded || awardedPoints > 0,
       earnedPoints: orderToUpdate.earnedPoints || awardedPoints,
     }
-    const updatedOrders = orders.map((order) => order.id === orderId ? updatedOrder : order)
+    const updatedOrders = savedStatus.orders.map((order) => order.id === orderId ? updatedOrder : order)
 
     localStorage.setItem('blossom-orders', JSON.stringify(updatedOrders))
     setOrders(updatedOrders)
+    setSelectedOrder(updatedOrder)
+    setNextStatus('')
+    setCancellationReason('')
+    setStatusMessage('Đã cập nhật trạng thái đơn hàng.')
     notifyOrderStatusChanged({
       actorRole: 'admin',
       order: updatedOrder,
@@ -240,7 +260,7 @@ function AdminOrdersPage() {
   return (
     <div className="admin-dashboard admin-orders-page">
       <aside className="admin-sidebar">
-        <button className="admin-brand" type="button" onClick={() => navigate('/admin')}><span>B</span>Blossom Brew</button>
+        <button className="admin-brand" type="button" onClick={() => navigate('/admin/home')}><span>B</span>Blossom Brew</button>
         <p className="admin-sidebar-label">Admin workspace</p>
         <nav className="admin-nav">
           {navItems.map((item) => <button className={item.active ? 'admin-nav-item active' : 'admin-nav-item'} key={item.label} type="button" onClick={() => navigate(item.to)}><span>{item.icon}</span>{item.label}</button>)}
@@ -272,9 +292,7 @@ function AdminOrdersPage() {
                 <span className="admin-order-customer"><strong>{order.receiver || order.member?.name || 'Khách vãng lai'}</strong><small>{order.product || '—'} · {formatDateTime(order.createdAt || order.time)}</small></span>
                 <span>{getChannel(order)}</span>
                 <strong>{formatPrice(order.total)}</strong>
-                <select className={`admin-order-status ${getStatusClass(order.status)}`} value={order.status || 'Chờ xác nhận'} onChange={(event) => updateStatus(order.id, event.target.value)}>
-                  {statusFilters.slice(1).map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-                </select>
+                <span className={`admin-order-status-text ${getStatusClass(order.status)}`}>{order.status || 'Chờ xác nhận'}</span>
                 <button className="admin-order-detail-figma" type="button" onClick={() => openOrderDetail(order)}>Chi tiết</button>
               </div>
             ))}
@@ -295,6 +313,18 @@ function AdminOrdersPage() {
             </div>
             <div className="admin-order-financial"><span>Tạm tính</span><b>{formatPrice(selectedOrder.subtotal || selectedOrder.total)}</b><span>Giảm giá</span><b>-{formatPrice(selectedOrder.discount)}</b></div>
             <div className="admin-modal-total"><span>Tổng thanh toán</span><strong>{formatPrice(selectedOrder.total)}</strong></div>
+            {selectedOrder.status === 'Đã hủy' && <p className="admin-cancellation-note"><b>Lý do hủy:</b> {selectedOrder.cancellationReason || 'Chưa có lý do được ghi nhận.'}</p>}
+            {getNextOrderStatuses(selectedOrder.status).length > 0 && (
+              <section className="admin-order-status-action">
+                <h3>Cập nhật trạng thái</h3>
+                <div className="admin-status-buttons">
+                  {getNextOrderStatuses(selectedOrder.status).map((status) => <button className={status === 'Đã hủy' ? 'admin-cancel-status-button' : 'admin-next-status-button'} key={status} type="button" onClick={() => { setStatusMessage(''); if (status === 'Đã hủy') setNextStatus('Đã hủy'); else updateStatus(selectedOrder.id, status) }}>{status === 'Đang pha' ? 'Chuyển sang Đang pha chế' : `Chuyển sang ${status}`}</button>)}
+                </div>
+                {nextStatus === 'Đã hủy' && <textarea value={cancellationReason} onChange={(event) => setCancellationReason(event.target.value)} placeholder="Nhập lý do hủy đơn..." />}
+                {nextStatus === 'Đã hủy' && <button type="button" onClick={() => updateStatus(selectedOrder.id, 'Đã hủy')}>Xác nhận hủy đơn</button>}
+                {statusMessage && <p>{statusMessage}</p>}
+              </section>
+            )}
           </section>
         </div>
       )}

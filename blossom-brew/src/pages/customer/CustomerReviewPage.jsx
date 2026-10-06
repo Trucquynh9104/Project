@@ -128,7 +128,7 @@ function CustomerReviewPage() {
         <button
           className="bb-brand"
           type="button"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/customer')}
         >
           <span>B</span>
           Blossom Brew

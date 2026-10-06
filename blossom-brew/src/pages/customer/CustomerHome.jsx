@@ -1,13 +1,8 @@
-import { useMemo } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import {
-  getCurrentUser,
-  getMembershipLabel,
-  GOLD_MIN_POINTS,
-  logoutUser,
-} from '../../services/authService'
-import NotificationDropdown from '../../components/NotificationDropdown'
 import CustomerAvatar from '../../components/CustomerAvatar'
+import NotificationDropdown from '../../components/NotificationDropdown'
+import RoleGuestHome from '../../components/RoleGuestHome'
+import { getCurrentUser, getMembershipLabel, logoutUser } from '../../services/authService'
 
 const navigationItems = [
   { icon: '⌂', label: 'Tổng quan', to: '/customer', active: true },
@@ -18,10 +13,6 @@ const navigationItems = [
   { icon: '✦', label: 'Thông báo', to: '/customer/notices' },
   { icon: '☷', label: 'Thông tin cá nhân', to: '/customer/profile' },
 ]
-
-function formatPrice(price) {
-  return `${Number(price || 0).toLocaleString('vi-VN')}đ`
-}
 
 function getCartCount() {
   try {
@@ -34,33 +25,15 @@ function getCartCount() {
   }
 }
 
-function getStatusGroup(status) {
-  if (status === 'Hoàn tất') return 'completed'
-  if (status === 'Đã hủy') return 'cancelled'
-  return 'incomplete'
+function getInitials(name = '') {
+  return name.split(' ').filter(Boolean).map((part) => part[0]).slice(-2).join('').toUpperCase()
 }
 
 function CustomerHome() {
   const navigate = useNavigate()
   const user = getCurrentUser()
 
-  const orders = useMemo(() => {
-    if (!user) return []
-    try {
-      return JSON.parse(localStorage.getItem('blossom-orders') || '[]')
-        .filter((order) => order.member?.id === user.id || (!order.member?.id && order.receiver === user.name))
-        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
-    } catch {
-      return []
-    }
-  }, [user])
-
-  if (!user) return <Navigate to="/login" replace />
-
-  const initials = user.name.split(' ').map((part) => part[0]).slice(-2).join('').toUpperCase()
-  const points = Number(user.points || 0)
-  const membershipLabel = getMembershipLabel(points)
-  const pointsToGold = Math.max(GOLD_MIN_POINTS - points, 0)
+  if (!user || user.role !== 'customer') return <Navigate to="/login" replace />
 
   function handleLogout() {
     logoutUser()
@@ -70,36 +43,32 @@ function CustomerHome() {
   return (
     <div className="bb-dashboard">
       <aside className="bb-sidebar">
-        <button className="bb-brand" type="button" onClick={() => navigate('/')}><span>B</span>Blossom Brew</button>
+        <button className="bb-brand" type="button" onClick={() => navigate('/customer')}><span>B</span>Blossom Brew</button>
         <p className="bb-sidebar-label">Customer space</p>
         <nav className="bb-sidebar-nav">
-          {navigationItems.map((item) => <button className={item.active ? 'bb-nav-item active' : 'bb-nav-item'} key={item.label} type="button" onClick={() => navigate(item.to)}><span>{item.icon}</span>{item.label}</button>)}
+          {navigationItems.map((item) => (
+            <button className={item.active ? 'bb-nav-item active' : 'bb-nav-item'} key={item.label} type="button" onClick={() => navigate(item.to)}>
+              <span>{item.icon}</span>{item.label}
+            </button>
+          ))}
         </nav>
-        <div className="bb-sidebar-profile"><span className="bb-avatar">{initials}</span><div><strong>{user.name}</strong><small>{membershipLabel}</small></div><button type="button" onClick={handleLogout}>Đăng xuất</button></div>
+        <div className="bb-sidebar-profile">
+          <span className="bb-avatar">{getInitials(user.name)}</span>
+          <div><strong>{user.name}</strong><small>{getMembershipLabel(user.points)}</small></div>
+          <button type="button" onClick={handleLogout}>Đăng xuất</button>
+        </div>
       </aside>
 
       <main className="bb-main">
-        <header className="bb-topbar"><span>TỔNG QUAN</span><div className="bb-topbar-actions"><NotificationDropdown /><button className="bb-cart-button" type="button" onClick={() => navigate('/customer/cart')}>Giỏ hàng <b>{getCartCount()}</b></button><CustomerAvatar /></div></header>
-        <section className="bb-content">
-          <p className="bb-eyebrow">Welcome back</p>
-          <h1>Chào, {user.name}.</h1>
-          <p className="bb-subtitle">Hôm nay bạn muốn thưởng thức gì từ Blossom Brew?</p>
-
-          <div className="bb-home-actions">
-            <button className="primary-button" type="button" onClick={() => navigate('/customer/menu')}>Đặt món ngay</button>
-            <button className="outline-button" type="button" onClick={() => navigate('/customer/history')}>Xem đơn hàng</button>
+        <header className="bb-topbar">
+          <span>TRANG CHỦ</span>
+          <div className="bb-topbar-actions">
+            <NotificationDropdown />
+            <button className="bb-cart-button" type="button" onClick={() => navigate('/customer/cart')}>Giỏ hàng <b>{getCartCount()}</b></button>
+            <CustomerAvatar />
           </div>
-
-          <div className="bb-home-summary">
-            <article><p>Điểm thành viên</p><strong>{points} điểm</strong><small>{pointsToGold > 0 ? `Còn ${pointsToGold} điểm để chạm Gold` : 'Bạn đang ở hạng Gold'}</small><button type="button" onClick={() => navigate('/customer/points')}>Xem ưu đãi</button></article>
-            <article><p>Đơn hàng gần đây</p><strong>{orders.length} đơn</strong><small>{orders[0] ? `Đơn mới nhất: ${orders[0].id}` : 'Bạn chưa có đơn hàng nào'}</small><button type="button" onClick={() => navigate('/customer/history')}>Lịch sử đơn</button></article>
-          </div>
-
-          <section className="bb-home-orders">
-            <div className="bb-section-heading"><div><p className="bb-eyebrow">Recent orders</p><h2>Đơn hàng gần đây.</h2></div><button className="bb-review-link" type="button" onClick={() => navigate('/customer/history')}>Xem tất cả</button></div>
-            {orders.length ? orders.slice(0, 3).map((order) => <article className="bb-home-order" key={order.id}><div><strong>{order.id}</strong><small>{order.product || order.items?.map((item) => `${item.name} ×${item.quantity}`).join(', ')}</small></div><strong>{formatPrice(order.total)}</strong><span className={`bb-status ${getStatusGroup(order.status)} ${order.status === 'Đang pha' ? 'brewing' : ''}`}>{order.status || 'Chờ xác nhận'}</span></article>) : <p className="bb-history-empty">Chưa có đơn hàng nào. Hãy chọn món yêu thích của bạn.</p>}
-          </section>
-        </section>
+        </header>
+        <section className="bb-content role-home-content"><RoleGuestHome role="customer" /></section>
       </main>
     </div>
   )

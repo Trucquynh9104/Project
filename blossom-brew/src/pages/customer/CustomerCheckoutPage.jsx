@@ -283,7 +283,7 @@ function CustomerCheckoutPage() {
   return (
     <div className="bb-dashboard">
       <aside className="bb-sidebar">
-        <button className="bb-brand" type="button" onClick={() => navigate('/')}>
+        <button className="bb-brand" type="button" onClick={() => navigate('/customer')}>
           <span>B</span>
           Blossom Brew
         </button>

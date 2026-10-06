@@ -88,13 +88,14 @@ function formatDateTime(value) {
   }).format(new Date(value))
 }
 
-function isPaidOrder(order) {
-  return Boolean(
-    order.paymentStatus === 'paid' ||
-    order.paidAt ||
-    (order.orderType === 'counter' && order.paymentMethod && order.status !== 'Đã hủy') ||
-    order.status === 'Hoàn tất',
-  )
+function isCompletedOrder(order) {
+  return order.status === 'Hoàn tất'
+}
+
+function getOrderRecordedAt(order) {
+  // Đơn được ghi nhận vào ca tại thời điểm chuyển sang Hoàn tất.
+  // Dữ liệu đơn cũ chưa có completedAt vẫn dùng thời điểm tạo đơn để không bị mất báo cáo.
+  return order.completedAt || order.createdAt
 }
 
 function CashierShiftPage() {
@@ -118,9 +119,11 @@ function CashierShiftPage() {
 
     window.addEventListener('focus', refreshShiftData)
     window.addEventListener('storage', refreshShiftData)
+    window.addEventListener('blossom-orders-updated', refreshShiftData)
     return () => {
       window.removeEventListener('focus', refreshShiftData)
       window.removeEventListener('storage', refreshShiftData)
+      window.removeEventListener('blossom-orders-updated', refreshShiftData)
     }
   }, [user?.id])
 
@@ -131,22 +134,23 @@ function CashierShiftPage() {
     const closedAt = shift.closedAt ? new Date(shift.closedAt).getTime() : Number.POSITIVE_INFINITY
 
     return orders.filter((order) => {
-      const createdAt = new Date(order.createdAt).getTime()
+      const recordedAt = new Date(getOrderRecordedAt(order)).getTime()
       const belongsToCurrentCashier = order.cashierId
         ? order.cashierId === user.id
-        : order.orderType === 'counter'
+        : order.completedBy === user.id
 
       return (
         belongsToCurrentCashier &&
-        createdAt >= openedAt &&
-        createdAt <= closedAt &&
-        isInDateRange(order.createdAt, fromDate, toDate)
+        Number.isFinite(recordedAt) &&
+        recordedAt >= openedAt &&
+        recordedAt <= closedAt &&
+        isInDateRange(getOrderRecordedAt(order), fromDate, toDate)
       )
     })
   }, [orders, shift, user, fromDate, toDate])
 
-  const paidOrders = useMemo(
-    () => shiftOrders.filter(isPaidOrder),
+  const completedOrders = useMemo(
+    () => shiftOrders.filter(isCompletedOrder),
     [shiftOrders],
   )
   const pendingOrders = useMemo(
@@ -154,8 +158,8 @@ function CashierShiftPage() {
     [shiftOrders],
   )
   const revenue = useMemo(
-    () => paidOrders.reduce((sum, order) => sum + Number(order.total || 0), 0),
-    [paidOrders],
+    () => completedOrders.reduce((sum, order) => sum + Number(order.total || 0), 0),
+    [completedOrders],
   )
   const filteredHistory = useMemo(
     () => history.filter((item) => isInDateRange(item.openedAt, fromDate, toDate)),
@@ -255,8 +259,8 @@ function CashierShiftPage() {
         />
 
         <section className="cashier-shift-summary">
-          <article><strong>{String(shiftOrders.length).padStart(2, '0')}</strong><span>Đơn đã tạo trong ca</span></article>
-          <article><strong>{formatPrice(revenue)}</strong><span>Doanh thu đã thanh toán</span></article>
+          <article><strong>{String(completedOrders.length).padStart(2, '0')}</strong><span>Đơn hoàn tất trong ca</span></article>
+          <article><strong>{formatPrice(revenue)}</strong><span>Doanh thu đơn hoàn tất</span></article>
           <article><strong>{String(pendingOrders).padStart(2, '0')}</strong><span>Đơn đang xử lý</span></article>
         </section>
 

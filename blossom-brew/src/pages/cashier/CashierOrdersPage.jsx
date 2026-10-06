@@ -4,6 +4,7 @@ import CashierShell from '../../components/CashierShell'
 import DateRangeFilter from '../../components/DateRangeFilter'
 import { addMemberPoints, getCurrentUser } from '../../services/authService'
 import { notifyOrderStatusChanged, notifyPointsAwarded } from '../../services/notificationService'
+import { getNextOrderStatuses, saveOrderStatus } from '../../services/orderService'
 import { isInDateRange } from '../../utils/dateRange'
 
 const statusFilters = [
@@ -70,6 +71,9 @@ function CashierOrdersPage() {
   const [toDate, setToDate] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [expandedOrderId, setExpandedOrderId] = useState(null)
+  const [nextStatus, setNextStatus] = useState('')
+  const [cancellationReason, setCancellationReason] = useState('')
+  const [statusMessage, setStatusMessage] = useState('')
   const [orders, setOrders] = useState(() =>
     JSON.parse(localStorage.getItem('blossom-orders') || '[]'),
   )
@@ -96,6 +100,17 @@ function CashierOrdersPage() {
     const orderToUpdate = orders.find((order) => order.id === id)
     if (!orderToUpdate) return
 
+    const savedStatus = saveOrderStatus({
+      orderId: id,
+      status,
+      actor: user,
+      cancellationReason,
+    })
+    if (!savedStatus.ok) {
+      setStatusMessage(savedStatus.message)
+      return
+    }
+
     const pointsToAdd = Math.floor(Number(orderToUpdate.total || 0) / 20000)
     const shouldAwardPoints =
       status === 'Hoàn tất' &&
@@ -116,16 +131,18 @@ function CashierOrdersPage() {
     }
 
     const updatedOrder = {
-      ...orderToUpdate,
-      status,
-      group: getOrderGroup(status),
+      ...savedStatus.order,
       pointsAwarded: orderToUpdate.pointsAwarded || awardedPoints > 0,
       earnedPoints: orderToUpdate.earnedPoints || awardedPoints,
     }
-    const updatedOrders = orders.map((order) => order.id === id ? updatedOrder : order)
+    const updatedOrders = savedStatus.orders.map((order) => order.id === id ? updatedOrder : order)
 
     setOrders(updatedOrders)
     localStorage.setItem('blossom-orders', JSON.stringify(updatedOrders))
+    window.dispatchEvent(new Event('blossom-orders-updated'))
+    setNextStatus('')
+    setCancellationReason('')
+    setStatusMessage('Đã cập nhật trạng thái đơn hàng.')
     notifyOrderStatusChanged({
       actorRole: 'cashier',
       order: updatedOrder,
@@ -210,6 +227,7 @@ function CashierOrdersPage() {
             <span>Mã đơn</span>
             <span>Khách hàng / sản phẩm</span>
             <span>Thời gian</span>
+            <span>Số tiền</span>
             <span>Trạng thái</span>
             <span>Thao tác</span>
           </div>
@@ -220,17 +238,18 @@ function CashierOrdersPage() {
                 <strong>{order.id}</strong>
                 <CustomerName order={order} />
                 <span>{order.time || '—'}</span>
-                <select
-                  className={`cashier-status-select ${getOrderGroup(order.status)}`}
-                  value={order.status}
-                  onChange={(event) => updateOrderStatus(order.id, event.target.value)}
-                >
-                  {statusFilters.slice(1).map((status) => <option key={status}>{status}</option>)}
-                </select>
+                <strong className="cashier-order-total">{formatPrice(order.total)}</strong>
+                <span className={`cashier-status-text ${getOrderGroup(order.status)}`}>{order.status}</span>
                 <button
                   className="cashier-detail-button"
                   type="button"
-                  onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
+                  onClick={() => {
+                    const isClosing = expandedOrderId === order.id
+                    setExpandedOrderId(isClosing ? null : order.id)
+                    setNextStatus('')
+                    setCancellationReason('')
+                    setStatusMessage('')
+                  }}
                 >
                   {expandedOrderId === order.id ? 'Đóng' : 'Chi tiết'}
                 </button>
@@ -250,6 +269,38 @@ function CashierOrdersPage() {
                       </p>
                     ))}
                   </div>
+                  {order.status === 'Đã hủy' && (
+                    <p className="cashier-cancellation-note"><b>Lý do hủy:</b> {order.cancellationReason || 'Chưa có lý do được ghi nhận.'}</p>
+                  )}
+                  {getNextOrderStatuses(order.status).length > 0 && (
+                    <div className="cashier-order-status-action">
+                      <p>Cập nhật trạng thái đơn hàng</p>
+                      <div className="cashier-status-buttons">
+                        {getNextOrderStatuses(order.status).map((status) => (
+                          <button
+                            className={status === 'Đã hủy' ? 'cashier-cancel-status-button' : 'cashier-next-status-button'}
+                            key={status}
+                            type="button"
+                            onClick={() => {
+                              setStatusMessage('')
+                              if (status === 'Đã hủy') setNextStatus('Đã hủy')
+                              else updateOrderStatus(order.id, status)
+                            }}
+                          >
+                            {status === 'Đang pha' ? 'Chuyển sang Đang pha chế' : `Chuyển sang ${status}`}
+                          </button>
+                        ))}
+                      </div>
+                      {nextStatus === 'Đã hủy' && (
+                        <label className="cashier-cancellation-field">
+                          Lý do hủy đơn
+                          <textarea value={cancellationReason} onChange={(event) => setCancellationReason(event.target.value)} placeholder="Nhập lý do khách/nhân viên hủy hoặc đổi món..." />
+                        </label>
+                      )}
+                      {nextStatus === 'Đã hủy' && <button className="cashier-shift-action" type="button" onClick={() => updateOrderStatus(order.id, 'Đã hủy')}>Xác nhận hủy đơn</button>}
+                      {statusMessage && <p className="cashier-status-message">{statusMessage}</p>}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

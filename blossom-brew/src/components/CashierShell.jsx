@@ -57,7 +57,7 @@ function CashierShell({
         <button
           className="cashier-brand"
           type="button"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/cashier/home')}
         >
           <span>B</span>
           Blossom Brew

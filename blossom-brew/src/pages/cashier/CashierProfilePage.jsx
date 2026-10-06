@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import CashierShell from '../../components/CashierShell'
-import { getCurrentUser, updateUserProfile } from '../../services/authService'
+import { getCurrentUser, logoutUser, updateUserProfile } from '../../services/authService'
 
 function getInitials(name = '') {
   return name
@@ -14,13 +14,16 @@ function getInitials(name = '') {
 }
 
 function CashierProfilePage() {
+  const navigate = useNavigate()
   const initialUser = getCurrentUser()
   const [currentUser, setCurrentUser] = useState(initialUser)
   const [form, setForm] = useState({
     name: initialUser?.name || '',
     phone: initialUser?.phone || '',
     password: '',
+    confirmPassword: '',
   })
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState('')
 
@@ -51,9 +54,19 @@ function CashierProfilePage() {
       setMessage('Số điện thoại chưa đúng định dạng.')
       return
     }
-    if (form.password && form.password.length < 8) {
+    if (isChangingPassword && !form.password) {
+      setMessageType('error')
+      setMessage('Vui lòng nhập mật khẩu mới.')
+      return
+    }
+    if (isChangingPassword && form.password.length < 8) {
       setMessageType('error')
       setMessage('Mật khẩu mới cần có ít nhất 8 ký tự.')
+      return
+    }
+    if (isChangingPassword && form.password !== form.confirmPassword) {
+      setMessageType('error')
+      setMessage('Xác nhận mật khẩu chưa khớp.')
       return
     }
 
@@ -61,7 +74,7 @@ function CashierProfilePage() {
       name,
       phone,
       avatar: currentUser.avatar || '',
-      password: form.password,
+      password: isChangingPassword ? form.password : '',
     })
     if (!result.ok) {
       setMessageType('error')
@@ -70,9 +83,25 @@ function CashierProfilePage() {
     }
 
     setCurrentUser(result.user)
-    setForm({ name: result.user.name, phone: result.user.phone || '', password: '' })
+    setForm({ name: result.user.name, phone: result.user.phone || '', password: '', confirmPassword: '' })
+    setIsChangingPassword(false)
     setMessageType('success')
     setMessage('Đã lưu thay đổi.')
+  }
+
+  function handleTogglePasswordChange() {
+    setIsChangingPassword((current) => !current)
+    setForm((current) => ({ ...current, password: '', confirmPassword: '' }))
+    setMessage('')
+  }
+
+  function handleForgotPassword() {
+    navigate('/forgot-password')
+  }
+
+  function handleLogout() {
+    logoutUser()
+    navigate('/')
   }
 
   return (
@@ -116,20 +145,40 @@ function CashierProfilePage() {
                 Email
                 <input autoComplete="email" disabled value={currentUser.email} />
               </label>
-              <label>
-                Mật khẩu mới
-                <input
-                  autoComplete="new-password"
-                  name="password"
-                  placeholder="••••••••"
-                  type="password"
-                  value={form.password}
-                  onChange={handleChange}
-                />
-              </label>
+              {isChangingPassword && <>
+                <label>
+                  Mật khẩu mới
+                  <input
+                    autoComplete="new-password"
+                    name="password"
+                    placeholder="Ít nhất 8 ký tự"
+                    type="password"
+                    value={form.password}
+                    onChange={handleChange}
+                  />
+                </label>
+                <label>
+                  Xác nhận mật khẩu mới
+                  <input
+                    autoComplete="new-password"
+                    name="confirmPassword"
+                    placeholder="Nhập lại mật khẩu mới"
+                    type="password"
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                  />
+                </label>
+              </>}
             </div>
             {message && <p className={`cashier-profile-message ${messageType}`}>{message}</p>}
-            <button className="cashier-save-button" type="submit">Lưu thay đổi</button>
+            <div className="cashier-profile-actions">
+              <button className="cashier-save-button" type="submit">Lưu thay đổi</button>
+              <button className="cashier-profile-action" type="button" onClick={handleTogglePasswordChange}>
+                {isChangingPassword ? 'Hủy đổi mật khẩu' : 'Đổi mật khẩu'}
+              </button>
+              <button className="cashier-profile-action" type="button" onClick={handleForgotPassword}>Quên mật khẩu?</button>
+              <button className="cashier-profile-action cashier-profile-logout-button" type="button" onClick={handleLogout}>Đăng xuất</button>
+            </div>
           </form>
         </div>
       </section>

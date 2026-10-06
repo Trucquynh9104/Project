@@ -180,7 +180,7 @@ function AdminDashboardPage() {
   return (
     <div className="admin-dashboard admin-figma-dashboard">
       <aside className="admin-sidebar">
-        <button className="admin-brand" type="button" onClick={() => navigate('/admin')}>
+        <button className="admin-brand" type="button" onClick={() => navigate('/admin/home')}>
           <span>B</span>
           Blossom Brew
         </button>

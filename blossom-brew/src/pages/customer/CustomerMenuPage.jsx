@@ -146,7 +146,7 @@ function CustomerMenuPage() {
   return (
     <div className="bb-dashboard">
       <aside className="bb-sidebar">
-        <button className="bb-brand" type="button" onClick={() => navigate('/')}><span>B</span>Blossom Brew</button>
+        <button className="bb-brand" type="button" onClick={() => navigate('/customer')}><span>B</span>Blossom Brew</button>
         <p className="bb-sidebar-label">Customer space</p>
         <nav className="bb-sidebar-nav">
           {navigationItems.map((item) => (

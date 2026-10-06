@@ -231,7 +231,7 @@ function AdminMembersPage() {
         <button
           className="admin-brand"
           type="button"
-          onClick={() => navigate('/admin')}
+          onClick={() => navigate('/admin/home')}
         >
           <span>B</span>
           Blossom Brew

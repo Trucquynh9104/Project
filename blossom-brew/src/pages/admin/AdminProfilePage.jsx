@@ -96,7 +96,7 @@ function AdminProfilePage() {
   return (
     <div className="admin-dashboard admin-profile-page">
       <aside className="admin-sidebar">
-        <button className="admin-brand" type="button" onClick={() => navigate('/admin')}><span>B</span>Blossom Brew</button>
+        <button className="admin-brand" type="button" onClick={() => navigate('/admin/home')}><span>B</span>Blossom Brew</button>
         <p className="admin-sidebar-label">Admin workspace</p>
         <nav className="admin-nav">
           {navItems.map((item) => <button className={item.active ? 'admin-nav-item active' : 'admin-nav-item'} key={item.label} type="button" onClick={() => navigate(item.to)}><span>{item.icon}</span>{item.label}</button>)}

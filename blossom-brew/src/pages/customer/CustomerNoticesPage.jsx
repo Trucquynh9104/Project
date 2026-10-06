@@ -103,6 +103,10 @@ function CustomerNoticesPage() {
     if (notice.to) navigate(notice.to)
   }
 
+  function handleMarkAllRead() {
+    setNotices(markAllNotificationsRead(user))
+  }
+
   function handleLogout() {
     logoutUser()
     navigate('/')
@@ -111,7 +115,7 @@ function CustomerNoticesPage() {
   return (
     <div className="bb-dashboard">
       <aside className="bb-sidebar">
-        <button className="bb-brand" type="button" onClick={() => navigate('/')}>
+        <button className="bb-brand" type="button" onClick={() => navigate('/customer')}>
           <span>B</span>
           Blossom Brew
         </button>
@@ -172,7 +176,7 @@ function CustomerNoticesPage() {
               className="outline-button"
               disabled={!unreadCount}
               type="button"
-              onClick={() => markAllNotificationsRead(user)}
+              onClick={handleMarkAllRead}
             >
               Đánh dấu đã đọc
             </button>
