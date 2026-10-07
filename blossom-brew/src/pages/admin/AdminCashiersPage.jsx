@@ -1,263 +1,352 @@
-import { useMemo, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
-import { getCurrentUser, logoutUser } from '../../services/authService'
+import { useLiveData } from "../../services/useLiveData";
+import { store } from "../../services/dataStore";
+import { useMemo, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { getCurrentUser, logoutUser } from "../../services/authService";
 
-const USERS_KEY = 'blossom-brew-users'
-const ITEMS_PER_PAGE = 8
+const USERS_KEY = "blossom-brew-users";
+const ITEMS_PER_PAGE = 8;
 
-function ListFooter({ currentPage, itemLabel, onPageChange, totalItems, totalPages }) {
-  const buttonStyle = { background: '#fff', border: '1px solid #dfcfc3', color: '#765747', height: '32px', width: '32px' }
+function ListFooter({
+  currentPage,
+  itemLabel,
+  onPageChange,
+  totalItems,
+  totalPages,
+}) {
+  const buttonStyle = {
+    background: "#fff",
+    border: "1px solid #dfcfc3",
+    color: "#765747",
+    height: "26px",
+    width: "26px",
+    fontSize: "14px",
+  };
   return (
-    <div style={{ alignItems: 'center', borderTop: '1px solid #eadfd5', display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', minHeight: '58px', padding: '0 18px' }}>
-      <span style={{ color: '#806858', fontSize: '13px' }}>Tổng số {itemLabel}: <strong style={{ color: '#50382c' }}>{totalItems}</strong></span>
-      <div style={{ alignItems: 'center', display: 'flex', gap: '8px' }}>
-        <button aria-label="Trang trước" disabled={currentPage === 1} onClick={() => onPageChange(Math.max(1, currentPage - 1))} style={{ ...buttonStyle, cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }} type="button">{'<'}</button>
-        <span style={{ color: '#806858', fontSize: '13px' }}>Trang {currentPage} / {totalPages}</span>
-        <button aria-label="Trang sau" disabled={currentPage === totalPages} onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} style={{ ...buttonStyle, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }} type="button">{'>'}</button>
+    <div
+      style={{
+        alignItems: "center",
+        borderTop: "1px solid #eadfd5",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "8px",
+        justifyContent: "space-between",
+        minHeight: "42px",
+        padding: "0 12px",
+      }}
+    >
+      <span style={{ color: "#806858", fontSize: "11px" }}>
+        Tổng số {itemLabel}:{" "}
+        <strong style={{ color: "#50382c" }}>{totalItems}</strong>
+      </span>
+      <div style={{ alignItems: "center", display: "flex", gap: "6px" }}>
+        <button
+          aria-label="Trang trước"
+          disabled={currentPage === 1}
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          style={{
+            ...buttonStyle,
+            cursor: currentPage === 1 ? "not-allowed" : "pointer",
+            opacity: currentPage === 1 ? 0.4 : 1,
+          }}
+          type="button"
+        >
+          {"<"}
+        </button>
+        <span style={{ color: "#806858", fontSize: "11px" }}>
+          Trang {currentPage} / {totalPages}
+        </span>
+        <button
+          aria-label="Trang sau"
+          disabled={currentPage === totalPages}
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          style={{
+            ...buttonStyle,
+            cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+            opacity: currentPage === totalPages ? 0.4 : 1,
+          }}
+          type="button"
+        >
+          {">"}
+        </button>
       </div>
     </div>
-  )
+  );
 }
 
 function getUsers() {
   try {
-    return JSON.parse(localStorage.getItem(USERS_KEY) || '[]')
+    return JSON.parse(store.getItem(USERS_KEY) || "[]");
   } catch {
-    return []
+    return [];
   }
 }
 
 function getOrders() {
   try {
-    return JSON.parse(localStorage.getItem('blossom-orders') || '[]')
+    return JSON.parse(store.getItem("blossom-orders") || "[]");
   } catch {
-    return []
+    return [];
   }
 }
 
 function formatDate(value) {
-  if (!value) return '—'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
 
-  return new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(date)
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
 }
 
 function emptyForm() {
   return {
-    name: '',
-    email: '',
-    phone: '',
-    password: '',
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
     active: true,
-  }
+  };
 }
 
 function AdminCashiersPage() {
-  const navigate = useNavigate()
-  const user = getCurrentUser()
-  const [users, setUsers] = useState(getUsers)
-  const [keyword, setKeyword] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [form, setForm] = useState(emptyForm)
-  const [editingId, setEditingId] = useState(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [message, setMessage] = useState('')
+  const navigate = useNavigate();
+  const user = getCurrentUser();
+  const [users, setUsers] = useLiveData(getUsers);
+  const [keyword, setKeyword] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const orders = useMemo(getOrders, [])
+  const orders = useLiveData(getOrders)[0];
   const cashiers = useMemo(
-    () => users.filter((account) => account.role === 'cashier'),
+    () => users.filter((account) => account.role === "cashier"),
     [users],
-  )
+  );
 
   const filteredCashiers = useMemo(() => {
-    const normalizedKeyword = keyword.trim().toLowerCase()
+    const normalizedKeyword = keyword.trim().toLowerCase();
 
     return cashiers.filter((cashier) => {
       const matchedKeyword =
         !normalizedKeyword ||
         [cashier.name, cashier.email, cashier.phone]
           .filter(Boolean)
-          .join(' ')
+          .join(" ")
           .toLowerCase()
-          .includes(normalizedKeyword)
+          .includes(normalizedKeyword);
 
-      const isActive = cashier.active !== false
+      const isActive = cashier.active !== false;
       const matchedStatus =
-        statusFilter === 'all' ||
-        (statusFilter === 'active' ? isActive : !isActive)
+        statusFilter === "all" ||
+        (statusFilter === "active" ? isActive : !isActive);
 
-      return matchedKeyword && matchedStatus
-    })
-  }, [cashiers, keyword, statusFilter])
+      return matchedKeyword && matchedStatus;
+    });
+  }, [cashiers, keyword, statusFilter]);
 
   const totalPages = Math.max(
     1,
     Math.ceil(filteredCashiers.length / ITEMS_PER_PAGE),
-  )
-  const activePage = Math.min(currentPage, totalPages)
+  );
+  const activePage = Math.min(currentPage, totalPages);
   const paginatedCashiers = filteredCashiers.slice(
     (activePage - 1) * ITEMS_PER_PAGE,
     activePage * ITEMS_PER_PAGE,
-  )
+  );
 
-  if (!user || user.role !== 'admin') {
-    return <Navigate to="/login" replace />
+  if (!user || user.role !== "admin") {
+    return <Navigate to="/login" replace />;
   }
 
   const initials = user.name
-    .split(' ')
+    .split(" ")
     .map((part) => part[0])
     .slice(-2)
-    .join('')
-    .toUpperCase()
+    .join("")
+    .toUpperCase();
 
   const navItems = [
-    { icon: '⌂', label: 'Tổng quan', to: '/admin' },
-    { icon: '⌁', label: 'Quản lý menu', to: '/admin/products' },
-    { icon: '□', label: 'Đơn hàng', to: '/admin/orders' },
-    { icon: '◦', label: 'Thành viên', to: '/admin/members' },
-    { icon: '◇', label: 'Voucher', to: '/admin/vouchers' },
+    { icon: "⌂", label: "Tổng quan", to: "/admin" },
+    { icon: "⌁", label: "Quản lý menu", to: "/admin/products" },
+    { icon: "□", label: "Đơn hàng", to: "/admin/orders" },
+    { icon: "◦", label: "Thành viên", to: "/admin/members" },
+    { icon: "◇", label: "Voucher", to: "/admin/vouchers" },
     {
-      icon: '♙',
-      label: 'Tài khoản thu ngân',
-      to: '/admin/cashiers',
+      icon: "♙",
+      label: "Tài khoản thu ngân",
+      to: "/admin/cashiers",
       active: true,
     },
-    { icon: '↗', label: 'Báo cáo', to: '/admin/reports' },
-    { icon: '✦', label: 'Thông báo', to: '/admin/notices' },
-    { icon: '○', label: 'Thông tin cá nhân', to: '/admin/profile' },
-  ]
+    { icon: "◷", label: "Ca làm việc", to: "/admin/shifts" },
+    { icon: "☆", label: "Đánh giá", to: "/admin/feedback" },
+    { icon: "?", label: "Yêu cầu hỗ trợ", to: "/admin/support" },
+    { icon: "↗", label: "Báo cáo", to: "/admin/reports" },
+    { icon: "✦", label: "Thông báo", to: "/admin/notices" },
+    { icon: "○", label: "Thông tin cá nhân", to: "/admin/profile" },
+  ];
 
-  function saveUsers(updatedUsers) {
-    localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers))
-    setUsers(updatedUsers)
+  async function saveUsers(updatedUsers) {
+    if (busy) return false;
+    setBusy(true);
+    store.setItem("blossom-brew-users", JSON.stringify(updatedUsers));
+    const saved = await store.flush();
+    setBusy(false);
+    setUsers(JSON.parse(store.getItem("blossom-brew-users") || "[]"));
+    return saved;
   }
 
-  function handleLogout() {
-    logoutUser()
-    navigate('/')
+  async function handleLogout() {
+    await logoutUser();
+    navigate("/");
   }
 
   function closeModal() {
-    setIsModalOpen(false)
-    setEditingId(null)
-    setForm(emptyForm())
-    setMessage('')
+    if (busy) return;
+    setIsModalOpen(false);
+    setEditingId(null);
+    setForm(emptyForm());
+    setMessage("");
   }
 
   function openCreateModal() {
-    setForm(emptyForm())
-    setEditingId(null)
-    setMessage('')
-    setIsModalOpen(true)
+    setForm(emptyForm());
+    setEditingId(null);
+    setMessage("");
+    setIsModalOpen(true);
   }
 
   function openEditModal(cashier) {
     setForm({
-      name: cashier.name || '',
-      email: cashier.email || '',
-      phone: cashier.phone || '',
-      password: '',
+      name: cashier.name || "",
+      email: cashier.email || "",
+      phone: cashier.phone || "",
+      password: "",
       active: cashier.active !== false,
-    })
-    setEditingId(cashier.id)
-    setMessage('')
-    setIsModalOpen(true)
+    });
+    setEditingId(cashier.id);
+    setMessage("");
+    setIsModalOpen(true);
   }
 
   function handleChange(event) {
-    const { name, value, checked, type } = event.target
+    const { name, value, checked, type } = event.target;
 
     setForm((current) => ({
       ...current,
-      [name]: type === 'checkbox' ? checked : value,
-    }))
-    setMessage('')
+      [name]: type === "checkbox" ? checked : value,
+    }));
+    setMessage("");
   }
 
-  function handleSubmit(event) {
-    event.preventDefault()
-    const normalizedEmail = form.email.trim().toLowerCase()
+  async function handleSubmit(event) {
+    event.preventDefault();
+    if (busy) return;
+    const normalizedEmail = form.email.trim().toLowerCase();
 
     if (!form.name.trim() || !normalizedEmail) {
-      setMessage('Vui lòng nhập họ tên và email.')
-      return
+      setMessage("Vui lòng nhập họ tên và email.");
+      return;
     }
 
     if (!editingId && form.password.length < 8) {
-      setMessage('Mật khẩu cần ít nhất 8 ký tự.')
-      return
+      setMessage("Mật khẩu cần ít nhất 8 ký tự.");
+      return;
     }
 
     const emailInUse = users.some(
       (account) =>
         account.email === normalizedEmail && account.id !== editingId,
-    )
+    );
 
     if (emailInUse) {
-      setMessage('Email này đã được sử dụng.')
-      return
+      setMessage("Email này đã được sử dụng.");
+      return;
     }
+
+    if (
+      !window.confirm(
+        editingId
+          ? "Xác nhận lưu thay đổi tài khoản thu ngân?"
+          : "Xác nhận thêm tài khoản thu ngân mới?",
+      )
+    )
+      return;
 
     if (editingId) {
-      saveUsers(
-        users.map((account) =>
-          account.id === editingId
-            ? {
-                ...account,
-                name: form.name.trim(),
-                email: normalizedEmail,
-                phone: form.phone.trim(),
-                active: form.active,
-                ...(form.password ? { password: form.password } : {}),
-              }
-            : account,
-        ),
+      if (
+        !(await saveUsers(
+          users.map((account) =>
+            account.id === editingId
+              ? {
+                  ...account,
+                  name: form.name.trim(),
+                  email: normalizedEmail,
+                  phone: form.phone.trim(),
+                  active: form.active,
+                  ...(form.password ? { password: form.password } : {}),
+                }
+              : account,
+          ),
+        ))
       )
+        return;
     } else {
-      saveUsers([
-        ...users,
-        {
-          id: `cashier-${Date.now()}`,
-          name: form.name.trim(),
-          email: normalizedEmail,
-          phone: form.phone.trim(),
-          password: form.password,
-          role: 'cashier',
-          points: 0,
-          active: true,
-          createdAt: new Date().toISOString(),
-        },
-      ])
+      if (
+        !(await saveUsers([
+          ...users,
+          {
+            id: `cashier-${Date.now()}`,
+            name: form.name.trim(),
+            email: normalizedEmail,
+            phone: form.phone.trim(),
+            password: form.password,
+            role: "cashier",
+            points: 0,
+            active: form.active,
+            createdAt: new Date().toISOString(),
+          },
+        ]))
+      )
+        return;
     }
 
-    closeModal()
+    closeModal();
   }
 
-  function toggleStatus(cashier) {
-    saveUsers(
-      users.map((account) =>
-        account.id === cashier.id
-          ? { ...account, active: account.active === false }
-          : account,
-      ),
+  async function toggleStatus(cashier) {
+    if (!window.confirm("Xác nhận thay đổi trạng thái tài khoản thu ngân?"))
+      return;
+    if (
+      !(await saveUsers(
+        users.map((account) =>
+          account.id === cashier.id
+            ? { ...account, active: account.active === false }
+            : account,
+        ),
+      ))
     )
+      return;
   }
 
-  function handleDelete(cashier) {
+  async function handleDelete(cashier) {
     const confirmed = window.confirm(
       `Bạn có chắc muốn xóa tài khoản thu ngân “${cashier.name}”?`,
+    );
+
+    if (!confirmed) return;
+
+    if (
+      !(await saveUsers(users.filter((account) => account.id !== cashier.id)))
     )
-
-    if (!confirmed) return
-
-    saveUsers(users.filter((account) => account.id !== cashier.id))
+      return;
   }
 
   return (
@@ -266,7 +355,7 @@ function AdminCashiersPage() {
         <button
           className="admin-brand"
           type="button"
-          onClick={() => navigate('/admin/home')}
+          onClick={() => navigate("/admin")}
         >
           <span>B</span>
           Blossom Brew
@@ -278,7 +367,7 @@ function AdminCashiersPage() {
           {navItems.map((item) => (
             <button
               className={
-                item.active ? 'admin-nav-item active' : 'admin-nav-item'
+                item.active ? "admin-nav-item active" : "admin-nav-item"
               }
               key={item.label}
               type="button"
@@ -304,48 +393,53 @@ function AdminCashiersPage() {
 
       <main className="admin-main">
         <header className="admin-topbar">
-          <span>TÀI KHOẢN THU NGÂN</span>
-          <span>Quản lý nhân sự tại quầy</span>
+          <div className="admin-page-title">
+            <h1>Tài khoản thu ngân.</h1>
+            <p>
+              Quản lý quyền truy cập và trạng thái làm việc của nhân sự tại
+              quầy.
+            </p>
+          </div>
+          <span>
+            {new Intl.DateTimeFormat("vi-VN", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            }).format(new Date())}
+          </span>
         </header>
 
         <section className="admin-content">
-          <div className="admin-cashiers-heading">
-            <div>
-              <p className="admin-eyebrow">Cashier management</p>
-              <h1>Tài khoản thu ngân.</h1>
-              <p>Quản lý quyền truy cập của nhân viên tại quầy.</p>
-            </div>
-
-            <button
-              className="admin-primary-button"
-              type="button"
-              onClick={openCreateModal}
-            >
-              ＋ Thêm thu ngân
-            </button>
-          </div>
-
           <div className="admin-cashiers-toolbar">
             <input
               value={keyword}
               onChange={(event) => {
-                setKeyword(event.target.value)
-                setCurrentPage(1)
+                setKeyword(event.target.value);
+                setCurrentPage(1);
               }}
               placeholder="Tìm tên, email hoặc số điện thoại..."
             />
 
-            <select
-              value={statusFilter}
-              onChange={(event) => {
-                setStatusFilter(event.target.value)
-                setCurrentPage(1)
-              }}
-            >
-              <option value="all">Tất cả trạng thái</option>
-              <option value="active">Đang hoạt động</option>
-              <option value="inactive">Tạm ngưng</option>
-            </select>
+            <div className="admin-cashiers-toolbar-actions">
+              <select
+                value={statusFilter}
+                onChange={(event) => {
+                  setStatusFilter(event.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                <option value="all">Tất cả trạng thái</option>
+                <option value="active">Đang hoạt động</option>
+                <option value="inactive">Tạm ngưng</option>
+              </select>
+              <button
+                className="admin-primary-button"
+                type="button"
+                onClick={openCreateModal}
+              >
+                ＋ Thêm thu ngân
+              </button>
+            </div>
           </div>
 
           <section className="admin-cashiers-table">
@@ -361,8 +455,8 @@ function AdminCashiersPage() {
             {paginatedCashiers.map((cashier) => {
               const cashierOrderCount = orders.filter(
                 (order) => order.cashierId === cashier.id,
-              ).length
-              const isActive = cashier.active !== false
+              ).length;
+              const isActive = cashier.active !== false;
 
               return (
                 <div className="admin-cashiers-row" key={cashier.id}>
@@ -373,7 +467,7 @@ function AdminCashiersPage() {
 
                   <span className="admin-cashier-contact">
                     <strong>{cashier.email}</strong>
-                    <small>{cashier.phone || 'Chưa cập nhật SĐT'}</small>
+                    <small>{cashier.phone || "Chưa cập nhật SĐT"}</small>
                   </span>
 
                   <span>{formatDate(cashier.createdAt)}</span>
@@ -382,11 +476,11 @@ function AdminCashiersPage() {
                   <span
                     className={
                       isActive
-                        ? 'admin-cashier-status active'
-                        : 'admin-cashier-status inactive'
+                        ? "admin-cashier-status active"
+                        : "admin-cashier-status inactive"
                     }
                   >
-                    {isActive ? 'Hoạt động' : 'Tạm ngưng'}
+                    {isActive ? "Hoạt động" : "Tạm ngưng"}
                   </span>
 
                   <span className="admin-cashier-actions">
@@ -438,11 +532,11 @@ function AdminCashiersPage() {
                       }
                       className={
                         isActive
-                          ? 'admin-status-switch is-active'
-                          : 'admin-status-switch'
+                          ? "admin-status-switch is-active"
+                          : "admin-status-switch"
                       }
                       role="switch"
-                      title={isActive ? 'Hủy kích hoạt' : 'Kích hoạt'}
+                      title={isActive ? "Hủy kích hoạt" : "Kích hoạt"}
                       type="button"
                       onClick={() => toggleStatus(cashier)}
                     >
@@ -450,15 +544,19 @@ function AdminCashiersPage() {
                     </button>
                   </span>
                 </div>
-              )
+              );
             })}
 
             {!filteredCashiers.length && (
-              <p className="admin-empty">
-                Chưa có tài khoản thu ngân phù hợp.
-              </p>
+              <p className="admin-empty">Chưa có tài khoản thu ngân phù hợp.</p>
             )}
-            <ListFooter currentPage={activePage} itemLabel="thu ngân" onPageChange={setCurrentPage} totalItems={cashiers.length} totalPages={totalPages} />
+            <ListFooter
+              currentPage={activePage}
+              itemLabel="thu ngân"
+              onPageChange={setCurrentPage}
+              totalItems={cashiers.length}
+              totalPages={totalPages}
+            />
           </section>
         </section>
       </main>
@@ -478,10 +576,10 @@ function AdminCashiersPage() {
             </button>
 
             <p className="admin-eyebrow">
-              {editingId ? 'Edit cashier' : 'New cashier'}
+              {editingId ? "Edit cashier" : "New cashier"}
             </p>
             <h2>
-              {editingId ? 'Cập nhật thu ngân' : 'Tạo tài khoản thu ngân'}
+              {editingId ? "Cập nhật thu ngân" : "Tạo tài khoản thu ngân"}
             </h2>
 
             <form onSubmit={handleSubmit}>
@@ -524,7 +622,7 @@ function AdminCashiersPage() {
                   value={form.password}
                   onChange={handleChange}
                   placeholder={
-                    editingId ? 'Không thay đổi mật khẩu' : 'Ít nhất 8 ký tự'
+                    editingId ? "Không thay đổi mật khẩu" : "Ít nhất 8 ký tự"
                   }
                 />
               </label>
@@ -541,7 +639,7 @@ function AdminCashiersPage() {
                 </label>
               )}
 
-              {message && <p className="admin-form-message">{message}</p>}
+              {message && <p className="admin-form-message error">{message}</p>}
 
               <div className="admin-cashier-modal-actions">
                 <button
@@ -552,8 +650,12 @@ function AdminCashiersPage() {
                   Hủy
                 </button>
 
-                <button className="admin-primary-button" type="submit">
-                  {editingId ? 'Lưu thay đổi' : 'Tạo tài khoản'}
+                <button
+                  className="admin-primary-button"
+                  type="submit"
+                  disabled={busy}
+                >
+                  {editingId ? "Lưu thay đổi" : "Tạo tài khoản"}
                 </button>
               </div>
             </form>
@@ -561,7 +663,7 @@ function AdminCashiersPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default AdminCashiersPage
+export default AdminCashiersPage;

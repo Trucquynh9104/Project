@@ -1,13 +1,17 @@
 {
   "name": "blossom-brew",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "node scripts/dev.mjs",
+    "build": "vite build && node scripts/build-server.mjs",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "node server/http.mjs --built",
+    "db:generate": "drizzle-kit generate",
+    "dev:client": "vite",
+    "dev:api": "node server/http.mjs",
+    "test": "node scripts/verify-login.mjs && node scripts/verify-ui.mjs && node scripts/verify-workflows.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
@@ -19,7 +23,13 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
+    "drizzle-kit": "^0.31.11",
+    "drizzle-orm": "^0.45.3",
+    "jsdom": "^30.1.2",
     "oxlint": "^1.81.0",
     "vite": "^8.3.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
   }
 }

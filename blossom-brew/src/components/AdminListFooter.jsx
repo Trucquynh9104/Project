@@ -9,8 +9,9 @@ function AdminListFooter({
     background: '#fff',
     border: '1px solid #dfcfc3',
     color: '#765747',
-    height: '32px',
-    width: '32px',
+    height: '26px',
+    width: '26px',
+    fontSize: '14px',
   }
 
   return (
@@ -20,18 +21,18 @@ function AdminListFooter({
         borderTop: '1px solid #eadfd5',
         display: 'flex',
         flexWrap: 'wrap',
-        gap: '12px',
+        gap: '8px',
         justifyContent: 'space-between',
-        minHeight: '58px',
-        padding: '0 18px',
+        minHeight: '42px',
+        padding: '0 12px',
       }}
     >
-      <span style={{ color: '#806858', fontSize: '13px' }}>
+      <span style={{ color: '#806858', fontSize: '11px' }}>
         Tổng số {itemLabel}:{' '}
         <strong style={{ color: '#50382c' }}>{totalItems}</strong>
       </span>
 
-      <div style={{ alignItems: 'center', display: 'flex', gap: '8px' }}>
+      <div style={{ alignItems: 'center', display: 'flex', gap: '6px' }}>
         <button
           aria-label="Trang trước"
           disabled={currentPage === 1}
@@ -46,7 +47,7 @@ function AdminListFooter({
           {'<'}
         </button>
 
-        <span style={{ color: '#806858', fontSize: '13px' }}>
+        <span style={{ color: '#806858', fontSize: '11px' }}>
           Trang {currentPage} / {totalPages}
         </span>
 

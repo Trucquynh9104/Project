@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { store } from "../../services/dataStore";
+import { useEffect, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import {
   getCurrentUser,
   getMembershipLabel,
   logoutUser,
-} from '../../services/authService'
-import NotificationDropdown from '../../components/NotificationDropdown'
-import CustomerAvatar from '../../components/CustomerAvatar'
+} from "../../services/authService";
+import NotificationDropdown from "../../components/NotificationDropdown";
+import CustomerAvatar from "../../components/CustomerAvatar";
 import {
   getNotificationLabel,
   getNotificationsForUser,
@@ -14,108 +15,164 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
   subscribeNotifications,
-} from '../../services/notificationService'
+} from "../../services/notificationService";
 
 const navigationItems = [
-  { icon: '⌂', label: 'Tổng quan', to: '/customer' },
-  { icon: '⌁', label: 'Menu & đặt món', to: '/customer/menu' },
-  { icon: '□', label: 'Giỏ hàng', to: '/customer/cart' },
-  { icon: '◇', label: 'Điểm & voucher', to: '/customer/points' },
-  { icon: '◷', label: 'Lịch sử đơn hàng', to: '/customer/history' },
-  { icon: '✦', label: 'Thông báo', to: '/customer/notices', active: true },
-  { icon: '☷', label: 'Thông tin cá nhân', to: '/customer/profile' },
-]
+  { icon: "⌂", label: "Tổng quan", to: "/customer" },
+  { icon: "⌁", label: "Menu & đặt món", to: "/customer/menu" },
+  { icon: "□", label: "Giỏ hàng", to: "/customer/cart" },
+  { icon: "◇", label: "Điểm & voucher", to: "/customer/points" },
+  { icon: "◷", label: "Lịch sử đơn hàng", to: "/customer/history" },
+  { icon: "✦", label: "Thông báo", to: "/customer/notices", active: true },
+  { icon: "?", label: "Hỗ trợ", to: "/customer/support" },
+  { icon: "☷", label: "Thông tin cá nhân", to: "/customer/profile" },
+];
 
-const ITEMS_PER_PAGE = 8
+const ITEMS_PER_PAGE = 5;
 
-function ListFooter({ currentPage, itemLabel, onPageChange, totalItems, totalPages }) {
+function ListFooter({
+  currentPage,
+  itemLabel,
+  onPageChange,
+  totalItems,
+  totalPages,
+}) {
   const buttonStyle = {
-    background: '#fff',
-    border: '1px solid #dfcfc3',
-    color: '#765747',
-    height: '32px',
-    width: '32px',
-  }
+    background: "#fff",
+    border: "1px solid #dfcfc3",
+    color: "#765747",
+    height: "26px",
+    width: "26px",
+    fontSize: "14px",
+  };
 
   return (
-    <div style={{ alignItems: 'center', borderTop: '1px solid #eadfd5', display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', minHeight: '58px', padding: '0 18px' }}>
-      <span style={{ color: '#806858', fontSize: '13px' }}>
-        Tổng số {itemLabel}: <strong style={{ color: '#50382c' }}>{totalItems}</strong>
+    <div
+      style={{
+        alignItems: "center",
+        borderTop: "1px solid #eadfd5",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "8px",
+        justifyContent: "space-between",
+        minHeight: "42px",
+        padding: "0 12px",
+      }}
+    >
+      <span style={{ color: "#806858", fontSize: "11px" }}>
+        Tổng số {itemLabel}:{" "}
+        <strong style={{ color: "#50382c" }}>{totalItems}</strong>
       </span>
-      <div style={{ alignItems: 'center', display: 'flex', gap: '8px' }}>
-        <button aria-label="Trang trước" disabled={currentPage === 1} onClick={() => onPageChange(Math.max(1, currentPage - 1))} style={{ ...buttonStyle, cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }} type="button">{'<'}</button>
-        <span style={{ color: '#806858', fontSize: '13px' }}>Trang {currentPage} / {totalPages}</span>
-        <button aria-label="Trang sau" disabled={currentPage === totalPages} onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} style={{ ...buttonStyle, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }} type="button">{'>'}</button>
+      <div style={{ alignItems: "center", display: "flex", gap: "6px" }}>
+        <button
+          aria-label="Trang trước"
+          disabled={currentPage === 1}
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          style={{
+            ...buttonStyle,
+            cursor: currentPage === 1 ? "not-allowed" : "pointer",
+            opacity: currentPage === 1 ? 0.4 : 1,
+          }}
+          type="button"
+        >
+          {"<"}
+        </button>
+        <span style={{ color: "#806858", fontSize: "11px" }}>
+          Trang {currentPage} / {totalPages}
+        </span>
+        <button
+          aria-label="Trang sau"
+          disabled={currentPage === totalPages}
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          style={{
+            ...buttonStyle,
+            cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+            opacity: currentPage === totalPages ? 0.4 : 1,
+          }}
+          type="button"
+        >
+          {">"}
+        </button>
       </div>
     </div>
-  )
+  );
 }
 
 function getCartCount() {
   try {
-    const cart = JSON.parse(localStorage.getItem('blossom-cart') || '[]')
-    return cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0)
+    const cart = JSON.parse(store.getItem("blossom-cart") || "[]");
+    return cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
   } catch {
-    return 0
+    return 0;
   }
 }
 
 function CustomerNoticesPage() {
-  const navigate = useNavigate()
-  const user = getCurrentUser()
-  const notificationUserId = user?.id || ''
-  const notificationUserRole = user?.role || ''
-  const [notices, setNotices] = useState(() => getNotificationsForUser(user))
-  const [currentPage, setCurrentPage] = useState(1)
+  const navigate = useNavigate();
+  const user = getCurrentUser();
+  const notificationUserId = user?.id || "";
+  const notificationUserRole = user?.role || "";
+  const [notices, setNotices] = useState(() => getNotificationsForUser(user));
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     function refreshNotices() {
-      initializeNotifications()
-      setNotices(getNotificationsForUser(notificationUserId ? { id: notificationUserId, role: notificationUserRole } : null))
+      initializeNotifications();
+      setNotices(
+        getNotificationsForUser(
+          notificationUserId
+            ? { id: notificationUserId, role: notificationUserRole }
+            : null,
+        ),
+      );
     }
 
-    refreshNotices()
-    return subscribeNotifications(refreshNotices)
-  }, [notificationUserId, notificationUserRole])
+    refreshNotices();
+    return subscribeNotifications(refreshNotices);
+  }, [notificationUserId, notificationUserRole]);
 
   if (!user) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login" replace />;
   }
 
   const initials = user.name
-    .split(' ')
+    .split(" ")
     .map((part) => part[0])
     .slice(-2)
-    .join('')
-    .toUpperCase()
+    .join("")
+    .toUpperCase();
 
-  const unreadCount = notices.filter((notice) => !notice.read).length
-  const totalPages = Math.max(1, Math.ceil(notices.length / ITEMS_PER_PAGE))
-  const activePage = Math.min(currentPage, totalPages)
+  const unreadCount = notices.filter((notice) => !notice.read).length;
+  const totalPages = Math.max(1, Math.ceil(notices.length / ITEMS_PER_PAGE));
+  const activePage = Math.min(currentPage, totalPages);
   const paginatedNotices = notices.slice(
     (activePage - 1) * ITEMS_PER_PAGE,
     activePage * ITEMS_PER_PAGE,
-  )
-  const membershipLabel = getMembershipLabel(user.points)
+  );
+  const membershipLabel = getMembershipLabel(user.points);
 
   function openNotice(notice) {
-    markNotificationRead(user, notice.id)
-    if (notice.to) navigate(notice.to)
+    markNotificationRead(user, notice.id);
+    if (notice.to) navigate(notice.to);
   }
 
   function handleMarkAllRead() {
-    setNotices(markAllNotificationsRead(user))
+    setNotices(markAllNotificationsRead(user));
   }
 
-  function handleLogout() {
-    logoutUser()
-    navigate('/')
+  async function handleLogout() {
+    await logoutUser();
+    navigate("/");
   }
 
   return (
     <div className="bb-dashboard">
       <aside className="bb-sidebar">
-        <button className="bb-brand" type="button" onClick={() => navigate('/customer')}>
+        <button
+          className="bb-brand"
+          type="button"
+          onClick={() => navigate("/customer")}
+        >
           <span>B</span>
           Blossom Brew
         </button>
@@ -125,7 +182,7 @@ function CustomerNoticesPage() {
         <nav className="bb-sidebar-nav">
           {navigationItems.map((item) => (
             <button
-              className={item.active ? 'bb-nav-item active' : 'bb-nav-item'}
+              className={item.active ? "bb-nav-item active" : "bb-nav-item"}
               key={item.label}
               type="button"
               onClick={() => navigate(item.to)}
@@ -142,7 +199,9 @@ function CustomerNoticesPage() {
             <strong>{user.name}</strong>
             <small>{membershipLabel}</small>
           </div>
-          <button type="button" onClick={handleLogout}>Đăng xuất</button>
+          <button type="button" onClick={handleLogout}>
+            Đăng xuất
+          </button>
         </div>
       </aside>
 
@@ -154,7 +213,7 @@ function CustomerNoticesPage() {
             <button
               className="bb-cart-button"
               type="button"
-              onClick={() => navigate('/customer/cart')}
+              onClick={() => navigate("/customer/cart")}
             >
               Giỏ hàng <b>{getCartCount()}</b>
             </button>
@@ -185,13 +244,17 @@ function CustomerNoticesPage() {
           <div className="bb-notice-list">
             {paginatedNotices.map((notice, index) => (
               <button
-                className={notice.read ? 'bb-notice-item' : 'bb-notice-item unread'}
+                className={
+                  notice.read ? "bb-notice-item" : "bb-notice-item unread"
+                }
                 key={notice.id}
                 type="button"
                 onClick={() => openNotice(notice)}
               >
                 <span className="bb-notice-number">
-                  {String((activePage - 1) * ITEMS_PER_PAGE + index + 1).padStart(2, '0')}
+                  {String(
+                    (activePage - 1) * ITEMS_PER_PAGE + index + 1,
+                  ).padStart(2, "0")}
                 </span>
 
                 <span className="bb-notice-copy">
@@ -215,7 +278,7 @@ function CustomerNoticesPage() {
         </section>
       </main>
     </div>
-  )
+  );
 }
 
-export default CustomerNoticesPage
+export default CustomerNoticesPage;

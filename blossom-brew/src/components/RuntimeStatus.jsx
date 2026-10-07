@@ -1,0 +1,3 @@
+import {useEffect,useState} from 'react'
+import {store} from '../services/dataStore'
+export default function RuntimeStatus(){const [state,setState]=useState({});useEffect(()=>{const handler=e=>setState(e.detail);window.addEventListener('brew-save-state',handler);return()=>window.removeEventListener('brew-save-state',handler)},[]);if(!state.message)return null;return <div className={`brew-runtime ${state.kind}`} role={state.kind==='error'?'alert':'status'}>{state.message}{state.kind==='error'&&<button onClick={()=>store.refresh()}>Tải lại dữ liệu</button>}{state.kind!=='saving'&&<button aria-label="Đóng thông báo" onClick={()=>setState({})}>×</button>}</div>}

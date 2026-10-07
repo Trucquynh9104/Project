@@ -1,126 +1,180 @@
-import { useMemo, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { PAYMENT_LABELS } from "../../../shared/businessRules";
+import { useDataVersion } from "../../services/useLiveData";
+import { store } from "../../services/dataStore";
+import { useMemo, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import {
   getCurrentUser,
   getMembershipLabel,
   logoutUser,
-} from '../../services/authService'
-import NotificationDropdown from '../../components/NotificationDropdown'
-import CustomerAvatar from '../../components/CustomerAvatar'
+} from "../../services/authService";
+import NotificationDropdown from "../../components/NotificationDropdown";
+import CustomerAvatar from "../../components/CustomerAvatar";
 
 const navigationItems = [
-  { icon: '⌂', label: 'Tổng quan', to: '/customer' },
-  { icon: '⌁', label: 'Menu & đặt món', to: '/customer/menu' },
-  { icon: '□', label: 'Giỏ hàng', to: '/customer/cart' },
-  { icon: '◇', label: 'Điểm & voucher', to: '/customer/points' },
-  { icon: '◷', label: 'Lịch sử đơn hàng', to: '/customer/history', active: true },
-  { icon: '✦', label: 'Thông báo', to: '/customer/notices' },
-  { icon: '☷', label: 'Thông tin cá nhân', to: '/customer/profile' },
-]
+  { icon: "⌂", label: "Tổng quan", to: "/customer" },
+  { icon: "⌁", label: "Menu & đặt món", to: "/customer/menu" },
+  { icon: "□", label: "Giỏ hàng", to: "/customer/cart" },
+  { icon: "◇", label: "Điểm & voucher", to: "/customer/points" },
+  {
+    icon: "◷",
+    label: "Lịch sử đơn hàng",
+    to: "/customer/history",
+    active: true,
+  },
+  { icon: "✦", label: "Thông báo", to: "/customer/notices" },
+  { icon: "?", label: "Hỗ trợ", to: "/customer/support" },
+  { icon: "☷", label: "Thông tin cá nhân", to: "/customer/profile" },
+];
 
 const statusFilters = [
-  { value: 'all', label: 'Tất cả trạng thái' },
-  { value: 'Chờ xác nhận', label: 'Chờ xác nhận' },
-  { value: 'Đang pha', label: 'Đang pha' },
-  { value: 'Hoàn tất', label: 'Hoàn tất' },
-  { value: 'Đã hủy', label: 'Đã hủy' },
-]
+  { value: "all", label: "Tất cả trạng thái" },
+  { value: "Chờ xác nhận", label: "Chờ xác nhận" },
+  { value: "Chờ pha", label: "Chờ pha" },
+  { value: "Đang pha", label: "Đang pha" },
+  { value: "Hoàn tất", label: "Hoàn tất" },
+  { value: "Đã hủy", label: "Đã hủy" },
+];
 
-const ITEMS_PER_PAGE = 8
+const ITEMS_PER_PAGE = 8;
 
-function ListFooter({ currentPage, itemLabel, onPageChange, totalItems, totalPages }) {
+function ListFooter({
+  currentPage,
+  itemLabel,
+  onPageChange,
+  totalItems,
+  totalPages,
+}) {
   const buttonStyle = {
-    background: '#fff',
-    border: '1px solid #dfcfc3',
-    color: '#765747',
-    height: '32px',
-    width: '32px',
-  }
+    background: "#fff",
+    border: "1px solid #dfcfc3",
+    color: "#765747",
+    height: "26px",
+    width: "26px",
+    fontSize: "14px",
+  };
 
   return (
-    <div style={{ alignItems: 'center', borderTop: '1px solid #eadfd5', display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', minHeight: '58px', padding: '0 18px' }}>
-      <span style={{ color: '#806858', fontSize: '13px' }}>
-        Tổng số {itemLabel}: <strong style={{ color: '#50382c' }}>{totalItems}</strong>
+    <div
+      style={{
+        alignItems: "center",
+        borderTop: "1px solid #eadfd5",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "8px",
+        justifyContent: "space-between",
+        minHeight: "42px",
+        padding: "0 12px",
+      }}
+    >
+      <span style={{ color: "#806858", fontSize: "11px" }}>
+        Tổng số {itemLabel}:{" "}
+        <strong style={{ color: "#50382c" }}>{totalItems}</strong>
       </span>
-      <div style={{ alignItems: 'center', display: 'flex', gap: '8px' }}>
-        <button aria-label="Trang trước" disabled={currentPage === 1} onClick={() => onPageChange(Math.max(1, currentPage - 1))} style={{ ...buttonStyle, cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }} type="button">{'<'}</button>
-        <span style={{ color: '#806858', fontSize: '13px' }}>Trang {currentPage} / {totalPages}</span>
-        <button aria-label="Trang sau" disabled={currentPage === totalPages} onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} style={{ ...buttonStyle, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }} type="button">{'>'}</button>
+      <div style={{ alignItems: "center", display: "flex", gap: "6px" }}>
+        <button
+          aria-label="Trang trước"
+          disabled={currentPage === 1}
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          style={{
+            ...buttonStyle,
+            cursor: currentPage === 1 ? "not-allowed" : "pointer",
+            opacity: currentPage === 1 ? 0.4 : 1,
+          }}
+          type="button"
+        >
+          {"<"}
+        </button>
+        <span style={{ color: "#806858", fontSize: "11px" }}>
+          Trang {currentPage} / {totalPages}
+        </span>
+        <button
+          aria-label="Trang sau"
+          disabled={currentPage === totalPages}
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          style={{
+            ...buttonStyle,
+            cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+            opacity: currentPage === totalPages ? 0.4 : 1,
+          }}
+          type="button"
+        >
+          {">"}
+        </button>
       </div>
     </div>
-  )
+  );
 }
 
 function getCartCount() {
   try {
-    return JSON.parse(localStorage.getItem('blossom-cart') || '[]').reduce(
+    return JSON.parse(store.getItem("blossom-cart") || "[]").reduce(
       (sum, item) => sum + Number(item.quantity || 0),
       0,
-    )
+    );
   } catch {
-    return 0
+    return 0;
   }
 }
 
 function formatPrice(price) {
-  return `${Number(price || 0).toLocaleString('vi-VN')}đ`
+  return `${Number(price || 0).toLocaleString("vi-VN")}đ`;
 }
 
 function formatOrderTime(order) {
   if (order.createdAt) {
-    const date = new Date(order.createdAt)
+    const date = new Date(order.createdAt);
 
     if (!Number.isNaN(date.getTime())) {
-      return new Intl.DateTimeFormat('vi-VN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }).format(date)
+      return new Intl.DateTimeFormat("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(date);
     }
   }
 
-  return order.time || '—'
+  return order.time || "—";
 }
 
 function getOrderGroup(order) {
-  if (order.status === 'Hoàn tất') return 'completed'
-  if (order.status === 'Đã hủy') return 'cancelled'
-  return 'incomplete'
+  if (order.status === "Hoàn tất") return "completed";
+  if (order.status === "Đã hủy") return "cancelled";
+  return "incomplete";
 }
 
 function getOrderProduct(order) {
   return (order.items || [])
     .map((item) => `${item.name} ×${item.quantity}`)
-    .join(', ')
+    .join(", ");
 }
 
 function getOrderOptions(order) {
   return (order.items || [])
     .map((item) => {
       const toppings = item.toppings?.length
-        ? item.toppings.join(', ')
-        : 'Không topping'
+        ? item.toppings.join(", ")
+        : "Không topping";
 
-      return `Size ${item.size || 'M'} · ${item.sugar || 'Không đường'} · ${item.ice || 'Không đá'} · ${toppings}`
+      return `Size ${item.size || "M"} · ${item.sugar || "Không đường"} · ${item.ice || "Không đá"} · ${toppings}`;
     })
-    .join(' | ')
+    .join(" | ");
 }
 
 function CustomerHistoryPage() {
-  const navigate = useNavigate()
-  const user = getCurrentUser()
-  const [filter, setFilter] = useState('all')
-  const [currentPage, setCurrentPage] = useState(1)
+  const navigate = useNavigate();
+  const user = getCurrentUser();
+  const dataVersion = useDataVersion();
+  const [filter, setFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const orders = useMemo(() => {
-    if (!user) return []
+    if (!user) return [];
 
     try {
-      const allOrders = JSON.parse(
-        localStorage.getItem('blossom-orders') || '[]',
-      )
+      const allOrders = JSON.parse(store.getItem("blossom-orders") || "[]");
 
       return allOrders
         .filter(
@@ -131,54 +185,63 @@ function CustomerHistoryPage() {
         .sort(
           (first, second) =>
             new Date(second.createdAt || 0) - new Date(first.createdAt || 0),
-        )
+        );
     } catch {
-      return []
+      return [];
     }
-  }, [user])
+  }, [user, dataVersion]);
 
   const reviewedOrderIds = useMemo(() => {
     try {
-      return JSON.parse(localStorage.getItem('blossom-reviews') || '[]').map(
-        (review) => review.orderId,
-      )
+      return JSON.parse(store.getItem("blossom-reviews") || "[]").map(
+        (review) => ({ orderId: review.orderId, productId: review.productId }),
+      );
     } catch {
-      return []
+      return [];
     }
-  }, [])
+  }, [dataVersion]);
 
   const filteredOrders = useMemo(() => {
-    if (filter === 'all') return orders
-    return orders.filter((order) => (order.status || 'Chờ xác nhận') === filter)
-  }, [filter, orders])
+    if (filter === "all") return orders;
+    return orders.filter(
+      (order) => (order.status || "Chờ xác nhận") === filter,
+    );
+  }, [filter, orders]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / ITEMS_PER_PAGE))
-  const activePage = Math.min(currentPage, totalPages)
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredOrders.length / ITEMS_PER_PAGE),
+  );
+  const activePage = Math.min(currentPage, totalPages);
   const paginatedOrders = filteredOrders.slice(
     (activePage - 1) * ITEMS_PER_PAGE,
     activePage * ITEMS_PER_PAGE,
-  )
+  );
 
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) return <Navigate to="/login" replace />;
 
-  const membershipLabel = getMembershipLabel(user.points)
+  const membershipLabel = getMembershipLabel(user.points);
 
   const initials = user.name
-    .split(' ')
+    .split(" ")
     .map((part) => part[0])
     .slice(-2)
-    .join('')
-    .toUpperCase()
+    .join("")
+    .toUpperCase();
 
-  function handleLogout() {
-    logoutUser()
-    navigate('/')
+  async function handleLogout() {
+    await logoutUser();
+    navigate("/");
   }
 
   return (
     <div className="bb-dashboard">
       <aside className="bb-sidebar">
-        <button className="bb-brand" type="button" onClick={() => navigate('/customer')}>
+        <button
+          className="bb-brand"
+          type="button"
+          onClick={() => navigate("/customer")}
+        >
           <span>B</span>
           Blossom Brew
         </button>
@@ -188,7 +251,7 @@ function CustomerHistoryPage() {
         <nav className="bb-sidebar-nav">
           {navigationItems.map((item) => (
             <button
-              className={item.active ? 'bb-nav-item active' : 'bb-nav-item'}
+              className={item.active ? "bb-nav-item active" : "bb-nav-item"}
               key={item.label}
               type="button"
               onClick={() => navigate(item.to)}
@@ -205,7 +268,9 @@ function CustomerHistoryPage() {
             <strong>{user.name}</strong>
             <small>{membershipLabel}</small>
           </div>
-          <button type="button" onClick={handleLogout}>Đăng xuất</button>
+          <button type="button" onClick={handleLogout}>
+            Đăng xuất
+          </button>
         </div>
       </aside>
 
@@ -214,7 +279,11 @@ function CustomerHistoryPage() {
           <span>LỊCH SỬ ĐƠN</span>
           <div className="bb-topbar-actions">
             <NotificationDropdown />
-            <button className="bb-cart-button" type="button" onClick={() => navigate('/customer/cart')}>
+            <button
+              className="bb-cart-button"
+              type="button"
+              onClick={() => navigate("/customer/cart")}
+            >
               Giỏ hàng <b>{getCartCount()}</b>
             </button>
             <CustomerAvatar />
@@ -226,15 +295,23 @@ function CustomerHistoryPage() {
           <div className="bb-page-heading">
             <div>
               <h1>Đơn hàng của bạn.</h1>
-              <p className="bb-subtitle">Xem lại các đơn đã đặt và trạng thái xử lý đơn hàng.</p>
+              <p className="bb-subtitle">
+                Xem lại các đơn đã đặt và trạng thái xử lý đơn hàng.
+              </p>
             </div>
 
-            <select className="bb-order-filter" value={filter} onChange={(event) => {
-              setFilter(event.target.value)
-              setCurrentPage(1)
-            }}>
+            <select
+              className="bb-order-filter"
+              value={filter}
+              onChange={(event) => {
+                setFilter(event.target.value);
+                setCurrentPage(1);
+              }}
+            >
               {statusFilters.map((item) => (
-                <option key={item.value} value={item.value}>{item.label}</option>
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
               ))}
             </select>
           </div>
@@ -249,27 +326,63 @@ function CustomerHistoryPage() {
             </div>
 
             {paginatedOrders.map((order) => {
-              const orderGroup = getOrderGroup(order)
-              const canReview = order.status === 'Hoàn tất' && !reviewedOrderIds.includes(order.id)
-              const productName = getOrderProduct(order) || order.product || 'Đơn hàng'
+              const orderGroup = getOrderGroup(order);
+              const canReview =
+                order.status === "Hoàn tất" &&
+                order.items.some(
+                  (item) =>
+                    !reviewedOrderIds.some(
+                      (r) =>
+                        r.orderId === order.id &&
+                        (!r.productId || r.productId === item.productId),
+                    ),
+                );
+              const productName =
+                getOrderProduct(order) || order.product || "Đơn hàng";
 
               return (
                 <div className="bb-order-row" key={order.id}>
                   <strong>{order.id}</strong>
                   <div className="bb-product-cell">
                     <span>{productName}</span>
-                    <small>{getOrderOptions(order) || order.options || ''}</small>
+                    <small>
+                      {PAYMENT_LABELS[order.paymentStatus] || "Đã thanh toán"}
+                    </small>
+                    <small>
+                      {getOrderOptions(order) || order.options || ""}
+                    </small>
                   </div>
                   <span>{formatOrderTime(order)}</span>
                   <strong>{formatPrice(order.total)}</strong>
 
                   <div className="bb-status-cell">
-                    <span className={`bb-status ${orderGroup} ${order.status === 'Đang pha' ? 'brewing' : ''}`}>
-                      {order.status || 'Chờ xác nhận'}
+                    <span
+                      className={`bb-status ${orderGroup} ${order.status === "Đang pha" ? "brewing" : ""}`}
+                    >
+                      {order.status || "Chờ xác nhận"}
                     </span>
 
-                    {order.earnedPoints > 0 && <small className="bb-earned-points">+{order.earnedPoints} điểm</small>}
+                    {order.earnedPoints > 0 && (
+                      <small className="bb-earned-points">
+                        +{order.earnedPoints} điểm
+                      </small>
+                    )}
 
+                    {order.paymentStatus !== "paid" &&
+                      order.status !== "Đã hủy" && (
+                        <button
+                          className="brew-button secondary"
+                          type="button"
+                          onClick={() =>
+                            navigate(
+                              "/customer/checkout?orderId=" +
+                                encodeURIComponent(order.id),
+                            )
+                          }
+                        >
+                          Thanh toán lại
+                        </button>
+                      )}
                     {canReview && (
                       <button
                         className="bb-review-link"
@@ -285,7 +398,7 @@ function CustomerHistoryPage() {
                     )}
                   </div>
                 </div>
-              )
+              );
             })}
 
             <ListFooter
@@ -297,11 +410,15 @@ function CustomerHistoryPage() {
             />
           </div>
 
-          {filteredOrders.length === 0 && <p className="bb-history-empty">Chưa có đơn hàng thuộc trạng thái này.</p>}
+          {filteredOrders.length === 0 && (
+            <p className="bb-history-empty">
+              Chưa có đơn hàng thuộc trạng thái này.
+            </p>
+          )}
         </section>
       </main>
     </div>
-  )
+  );
 }
 
-export default CustomerHistoryPage
+export default CustomerHistoryPage;

@@ -1,5 +1,8 @@
-import { useMemo, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { useLiveData, useDataVersion } from "../../services/useLiveData";
+import { isVoucherExpired, localDay } from "../../../shared/businessRules";
+import { store } from "../../services/dataStore";
+import { useMemo, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import {
   getMembershipTier,
   getCurrentUser,
@@ -7,136 +10,138 @@ import {
   logoutUser,
   redeemPointsVoucher,
   SILVER_MIN_POINTS,
-} from '../../services/authService'
-import NotificationDropdown from '../../components/NotificationDropdown'
-import CustomerAvatar from '../../components/CustomerAvatar'
-import { notifyPointsRedeemed } from '../../services/notificationService'
+} from "../../services/authService";
+import NotificationDropdown from "../../components/NotificationDropdown";
+import CustomerAvatar from "../../components/CustomerAvatar";
+import { notifyPointsRedeemed } from "../../services/notificationService";
 
-const VOUCHERS_KEY = 'blossom-vouchers'
-const SILVER_POINTS = SILVER_MIN_POINTS
-const GOLD_POINTS = GOLD_MIN_POINTS
+const VOUCHERS_KEY = "blossom-vouchers";
+const SILVER_POINTS = SILVER_MIN_POINTS;
+const GOLD_POINTS = GOLD_MIN_POINTS;
 
 const defaultVouchers = [
   {
-    id: 'voucher-1',
-    code: 'BBSILVER',
-    type: 'percent',
+    id: "voucher-1",
+    code: "BBSILVER",
+    type: "percent",
     value: 20,
     minOrder: 80000,
     maxDiscount: 30000,
     active: true,
-    expiry: '2026-12-31',
+    expiry: "2026-12-31",
     requiresSilver: true,
   },
   {
-    id: 'voucher-2',
-    code: 'WELCOME25',
-    type: 'fixed',
+    id: "voucher-2",
+    code: "WELCOME25",
+    type: "fixed",
     value: 25000,
     minOrder: 60000,
     maxDiscount: 0,
     active: true,
-    expiry: '2026-12-31',
+    expiry: "2026-12-31",
     requiresSilver: false,
   },
-]
+];
 
 const navigationItems = [
-  { icon: '⌂', label: 'Tổng quan', to: '/customer' },
-  { icon: '⌁', label: 'Menu & đặt món', to: '/customer/menu' },
-  { icon: '□', label: 'Giỏ hàng', to: '/customer/cart' },
-  { icon: '◇', label: 'Điểm & voucher', to: '/customer/points', active: true },
-  { icon: '◷', label: 'Lịch sử đơn hàng', to: '/customer/history' },
-  { icon: '✦', label: 'Thông báo', to: '/customer/notices' },
-  { icon: '☷', label: 'Thông tin cá nhân', to: '/customer/profile' },
-]
+  { icon: "⌂", label: "Tổng quan", to: "/customer" },
+  { icon: "⌁", label: "Menu & đặt món", to: "/customer/menu" },
+  { icon: "□", label: "Giỏ hàng", to: "/customer/cart" },
+  { icon: "◇", label: "Điểm & voucher", to: "/customer/points", active: true },
+  { icon: "◷", label: "Lịch sử đơn hàng", to: "/customer/history" },
+  { icon: "✦", label: "Thông báo", to: "/customer/notices" },
+  { icon: "?", label: "Hỗ trợ", to: "/customer/support" },
+  { icon: "☷", label: "Thông tin cá nhân", to: "/customer/profile" },
+];
 
 function formatPrice(price) {
-  return `${Number(price || 0).toLocaleString('vi-VN')}đ`
+  return `${Number(price || 0).toLocaleString("vi-VN")}đ`;
 }
 
 function formatDate(date) {
-  if (!date) return 'Không giới hạn'
+  if (!date) return "Không giới hạn";
 
-  const [year, month, day] = date.split('-')
-  return year && month && day ? `${day}/${month}/${year}` : date
+  const [year, month, day] = date.split("-");
+  return year && month && day ? `${day}/${month}/${year}` : date;
 }
 
 function isExpired(expiry) {
-  return Boolean(expiry && new Date(`${expiry}T23:59:59`) < new Date())
+  return isVoucherExpired(expiry);
 }
 
 function getAdminVouchers() {
   try {
-    const savedVouchers = JSON.parse(
-      localStorage.getItem(VOUCHERS_KEY) || '[]',
-    )
+    const savedVouchers = JSON.parse(store.getItem(VOUCHERS_KEY) || "[]");
 
-    return savedVouchers.length ? savedVouchers : defaultVouchers
+    return savedVouchers;
   } catch {
-    return defaultVouchers
+    return [];
   }
 }
 
 function getVoucherDescription(voucher) {
-  if (voucher.type === 'percent') {
-    const maxDiscount = Number(voucher.maxDiscount || 0)
+  if (voucher.type === "percent") {
+    const maxDiscount = Number(voucher.maxDiscount || 0);
 
     return maxDiscount > 0
       ? `Giảm ${voucher.value}%, tối đa ${formatPrice(maxDiscount)} cho đơn từ ${formatPrice(voucher.minOrder)}.`
-      : `Giảm ${voucher.value}% cho đơn từ ${formatPrice(voucher.minOrder)}.`
+      : `Giảm ${voucher.value}% cho đơn từ ${formatPrice(voucher.minOrder)}.`;
   }
 
-  return `Giảm ${formatPrice(voucher.value)} cho đơn từ ${formatPrice(voucher.minOrder)}.`
+  return `Giảm ${formatPrice(voucher.value)} cho đơn từ ${formatPrice(voucher.minOrder)}.`;
 }
 
 function getVoucherConditions(voucher) {
   const conditions = [
     `Áp dụng cho đơn hàng từ ${formatPrice(voucher.minOrder)}.`,
-    'Mỗi đơn hàng chỉ dùng một voucher.',
-  ]
+    "Mỗi đơn hàng chỉ dùng một voucher.",
+  ];
 
-  if (voucher.type === 'percent' && Number(voucher.maxDiscount || 0) > 0) {
-    conditions.unshift(`Giảm tối đa ${formatPrice(voucher.maxDiscount)}.`)
+  if (voucher.type === "percent" && Number(voucher.maxDiscount || 0) > 0) {
+    conditions.unshift(`Giảm tối đa ${formatPrice(voucher.maxDiscount)}.`);
   }
 
   if (voucher.requiresSilver) {
-    conditions.unshift(`Chỉ áp dụng thành viên Silver từ ${SILVER_POINTS} điểm.`)
+    conditions.unshift(
+      `Chỉ áp dụng thành viên Silver từ ${SILVER_POINTS} điểm.`,
+    );
   }
 
-  return conditions
+  return conditions;
 }
 
 function getCartCount() {
   try {
-    return JSON.parse(localStorage.getItem('blossom-cart') || '[]').reduce(
+    return JSON.parse(store.getItem("blossom-cart") || "[]").reduce(
       (sum, item) => sum + Number(item.quantity || 0),
       0,
-    )
+    );
   } catch {
-    return 0
+    return 0;
   }
 }
 
 function CustomerPointsPage() {
-  const navigate = useNavigate()
-  const [user, setUser] = useState(getCurrentUser)
-  const [selectedVoucher, setSelectedVoucher] = useState(null)
-  const [pointsToRedeem, setPointsToRedeem] = useState('10')
-  const [message, setMessage] = useState('')
+  const navigate = useNavigate();
+  const [user, setUser] = useLiveData(getCurrentUser);
+  const dataVersion = useDataVersion();
+  const [selectedVoucher, setSelectedVoucher] = useState(null);
+  const [pointsToRedeem, setPointsToRedeem] = useState("10");
+  const [message, setMessage] = useState("");
 
   const membershipStats = useMemo(() => {
-    if (!user) return { completedCount: 0, totalSpent: 0 }
+    if (!user) return { completedCount: 0, totalSpent: 0 };
 
     try {
       const completedOrders = JSON.parse(
-        localStorage.getItem('blossom-orders') || '[]',
+        store.getItem("blossom-orders") || "[]",
       ).filter(
         (order) =>
-          order.status === 'Hoàn tất' &&
+          order.status === "Hoàn tất" &&
           (order.member?.id === user.id ||
             (!order.member?.id && order.receiver === user.name)),
-      )
+      );
 
       return {
         completedCount: completedOrders.length,
@@ -144,90 +149,93 @@ function CustomerPointsPage() {
           (sum, order) => sum + Number(order.total || 0),
           0,
         ),
-      }
+      };
     } catch {
-      return { completedCount: 0, totalSpent: 0 }
+      return { completedCount: 0, totalSpent: 0 };
     }
-  }, [user])
+  }, [user, dataVersion]);
 
   const activeVouchers = useMemo(() => {
     return getAdminVouchers().filter(
-      (voucher) => voucher.active && !isExpired(voucher.expiry),
-    )
-  }, [])
+      (voucher) =>
+        voucher.active &&
+        !isExpired(voucher.expiry) &&
+        (!voucher.startDate || voucher.startDate <= localDay()) &&
+        (!voucher.usageLimit ||
+          Number(voucher.usedCount || 0) < Number(voucher.usageLimit)),
+    );
+  }, [dataVersion]);
 
   if (!user) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login" replace />;
   }
 
-  const points = Number(user.points || 0)
-  const memberTier = getMembershipTier(points)
+  const points = Number(user.points || 0);
+  const memberTier = getMembershipTier(points);
 
   const nextTier =
     points < SILVER_POINTS
-      ? { name: 'Silver', target: SILVER_POINTS }
+      ? { name: "Silver", target: SILVER_POINTS }
       : points < GOLD_POINTS
-        ? { name: 'Gold', target: GOLD_POINTS }
-        : null
+        ? { name: "Gold", target: GOLD_POINTS }
+        : null;
 
   const progress = nextTier
     ? Math.min((points / nextTier.target) * 100, 100)
-    : 100
-  const pointsToNextTier = nextTier
-    ? Math.max(nextTier.target - points, 0)
-    : 0
-  const enteredPoints = Number(pointsToRedeem)
+    : 100;
+  const pointsToNextTier = nextTier ? Math.max(nextTier.target - points, 0) : 0;
+  const enteredPoints = Number(pointsToRedeem);
   const canRedeem =
     Number.isInteger(enteredPoints) &&
     enteredPoints >= 10 &&
-    enteredPoints <= points
+    enteredPoints <= points;
 
   const initials = user.name
-    .split(' ')
+    .split(" ")
     .map((part) => part[0])
     .slice(-2)
-    .join('')
-    .toUpperCase()
+    .join("")
+    .toUpperCase();
 
-  function handleLogout() {
-    logoutUser()
-    navigate('/')
+  async function handleLogout() {
+    await logoutUser();
+    navigate("/");
   }
 
   function chooseVoucher(voucher) {
     if (voucher.requiresSilver && points < SILVER_POINTS) {
       setMessage(
         `Voucher ${voucher.code} chỉ dành cho thành viên Silver từ ${SILVER_POINTS} điểm.`,
-      )
-      return
+      );
+      return;
     }
 
-    localStorage.setItem('blossom-selected-voucher', voucher.code)
-    navigate('/customer/menu')
+    store.setItem("blossom-selected-voucher", voucher.code);
+    navigate("/customer/menu");
   }
 
   function openRedeemModal() {
-    setPointsToRedeem('10')
-    setSelectedVoucher({ code: 'Đổi điểm' })
+    setPointsToRedeem("10");
+    setSelectedVoucher({ code: "Đổi điểm" });
   }
 
-  function confirmRedeemPoints() {
-    const result = redeemPointsVoucher({ pointsToRedeem: enteredPoints })
+  async function confirmRedeemPoints() {
+    const result = await redeemPointsVoucher({ pointsToRedeem: enteredPoints });
 
     if (!result.ok) {
-      setMessage(result.message)
-      return
+      setMessage(result.message);
+      return;
     }
 
-    setUser(result.user)
-    setSelectedVoucher(null)
-    localStorage.setItem('blossom-selected-voucher', result.voucher.code)
-    notifyPointsRedeemed({ user: result.user, voucher: result.voucher })
-    setMessage(`${result.message} Đang chuyển đến menu.`)
+    setUser(result.user);
+    setSelectedVoucher(null);
+    store.setItem("blossom-selected-voucher", result.voucher.code);
+    notifyPointsRedeemed({ user: result.user, voucher: result.voucher });
+    setMessage(`${result.message} Đang chuyển đến menu.`);
 
     window.setTimeout(() => {
-      navigate('/customer/menu')
-    }, 900)
+      navigate("/customer/menu");
+    }, 900);
   }
 
   return (
@@ -236,7 +244,7 @@ function CustomerPointsPage() {
         <button
           className="bb-brand"
           type="button"
-          onClick={() => navigate('/customer')}
+          onClick={() => navigate("/customer")}
         >
           <span>B</span>
           Blossom Brew
@@ -247,7 +255,7 @@ function CustomerPointsPage() {
         <nav className="bb-sidebar-nav">
           {navigationItems.map((item) => (
             <button
-              className={item.active ? 'bb-nav-item active' : 'bb-nav-item'}
+              className={item.active ? "bb-nav-item active" : "bb-nav-item"}
               key={item.label}
               type="button"
               onClick={() => navigate(item.to)}
@@ -282,7 +290,7 @@ function CustomerPointsPage() {
             <button
               className="bb-cart-button"
               type="button"
-              onClick={() => navigate('/customer/cart')}
+              onClick={() => navigate("/customer/cart")}
             >
               Giỏ hàng <b>{getCartCount()}</b>
             </button>
@@ -305,7 +313,7 @@ function CustomerPointsPage() {
               <span>Điểm của bạn sẽ hết hạn vào 31/12/2026</span>
               <hr />
               <small>
-                {membershipStats.completedCount} đơn hàng ·{' '}
+                {membershipStats.completedCount} đơn hàng ·{" "}
                 {formatPrice(membershipStats.totalSpent)} tổng chi tiêu
               </small>
             </article>
@@ -315,13 +323,13 @@ function CustomerPointsPage() {
 
               <h2>
                 {points >= GOLD_POINTS
-                  ? 'Bạn đã đạt Gold.'
+                  ? "Bạn đã đạt Gold."
                   : `Chạm mốc ${nextTier.name}.`}
               </h2>
 
               <span>
                 {points >= GOLD_POINTS
-                  ? 'Bạn đang nhận được những ưu đãi của hạng Gold.'
+                  ? "Bạn đang nhận được những ưu đãi của hạng Gold."
                   : `Tích thêm ${pointsToNextTier} điểm để mở khoá ưu đãi ${nextTier.name}.`}
               </span>
 
@@ -340,9 +348,12 @@ function CustomerPointsPage() {
 
           <div className="bb-voucher-grid">
             {activeVouchers.map((voucher, index) => (
-              <article className="bb-voucher-card" key={voucher.id || voucher.code}>
+              <article
+                className="bb-voucher-card"
+                key={voucher.id || voucher.code}
+              >
                 <span className="bb-voucher-icon">
-                  {index === 0 ? '◇' : '✦'}
+                  {index === 0 ? "◇" : "✦"}
                 </span>
 
                 <h3>{voucher.code}</h3>
@@ -391,7 +402,7 @@ function CustomerPointsPage() {
         <div className="toast">
           <span>{message}</span>
 
-          <button type="button" onClick={() => setMessage('')}>
+          <button type="button" onClick={() => setMessage("")}>
             ×
           </button>
         </div>
@@ -414,7 +425,7 @@ function CustomerPointsPage() {
               ×
             </button>
 
-            {selectedVoucher.code === 'Đổi điểm' ? (
+            {selectedVoucher.code === "Đổi điểm" ? (
               <>
                 <p className="bb-eyebrow">Points exchange</p>
                 <h2>Đổi điểm lấy voucher</h2>
@@ -445,7 +456,7 @@ function CustomerPointsPage() {
                   disabled={!canRedeem}
                 >
                   {points < 10
-                    ? 'Chưa đủ 10 điểm'
+                    ? "Chưa đủ 10 điểm"
                     : `Xác nhận đổi ${enteredPoints || 0} điểm`}
                 </button>
               </>
@@ -480,7 +491,7 @@ function CustomerPointsPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default CustomerPointsPage
+export default CustomerPointsPage;

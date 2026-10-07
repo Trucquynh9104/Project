@@ -1,122 +1,196 @@
-import { useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { store } from "../../services/dataStore";
+import { useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import {
   getCurrentUser,
   getMembershipLabel,
   logoutUser,
   updateUserProfile,
-} from '../../services/authService'
-import NotificationDropdown from '../../components/NotificationDropdown'
-import CustomerAvatar from '../../components/CustomerAvatar'
+} from "../../services/authService";
+import NotificationDropdown from "../../components/NotificationDropdown";
+import CustomerAvatar from "../../components/CustomerAvatar";
 
 const navigationItems = [
-  { icon: '⌂', label: 'Tổng quan', to: '/customer' },
-  { icon: '⌁', label: 'Menu & đặt món', to: '/customer/menu' },
-  { icon: '□', label: 'Giỏ hàng', to: '/customer/cart' },
-  { icon: '◇', label: 'Điểm & voucher', to: '/customer/points' },
-  { icon: '◷', label: 'Lịch sử đơn hàng', to: '/customer/history' },
-  { icon: '✦', label: 'Thông báo', to: '/customer/notices' },
+  { icon: "⌂", label: "Tổng quan", to: "/customer" },
+  { icon: "⌁", label: "Menu & đặt món", to: "/customer/menu" },
+  { icon: "□", label: "Giỏ hàng", to: "/customer/cart" },
+  { icon: "◇", label: "Điểm & voucher", to: "/customer/points" },
+  { icon: "◷", label: "Lịch sử đơn hàng", to: "/customer/history" },
+  { icon: "✦", label: "Thông báo", to: "/customer/notices" },
   {
-    icon: '☷',
-    label: 'Thông tin cá nhân',
-    to: '/customer/profile',
+    icon: "☷",
+    label: "Thông tin cá nhân",
+    to: "/customer/profile",
     active: true,
   },
-]
+];
 
 function getCartCount() {
   try {
-    const cart = JSON.parse(localStorage.getItem('blossom-cart') || '[]')
+    const cart = JSON.parse(store.getItem("blossom-cart") || "[]");
 
-    return cart.reduce(
-      (total, item) => total + Number(item.quantity || 0),
-      0,
-    )
+    return cart.reduce((total, item) => total + Number(item.quantity || 0), 0);
   } catch {
-    return 0
+    return 0;
   }
 }
 
 function CustomerProfilePage() {
-  const navigate = useNavigate()
-  const initialUser = getCurrentUser()
+  const navigate = useNavigate();
+  const initialUser = getCurrentUser();
 
-  const [user, setUser] = useState(initialUser)
+  const [user, setUser] = useState(initialUser);
   const [form, setForm] = useState({
-    name: initialUser?.name || '',
-    phone: initialUser?.phone || '',
-    avatar: initialUser?.avatar || '',
-  })
-  const [message, setMessage] = useState('')
+    name: initialUser?.name || "",
+    phone: initialUser?.phone || "",
+    avatar: initialUser?.avatar || "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
 
   if (!user) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login" replace />;
   }
 
-  const membershipLabel = getMembershipLabel(user.points)
+  const membershipLabel = getMembershipLabel(user.points);
 
   const initials = user.name
-    .split(' ')
+    .split(" ")
     .map((part) => part[0])
     .slice(-2)
-    .join('')
-    .toUpperCase()
+    .join("")
+    .toUpperCase();
 
   function handleChange(event) {
-    const { name, value } = event.target
+    const { name, value } = event.target;
 
     setForm((current) => ({
       ...current,
       [name]: value,
-    }))
+    }));
 
-    setMessage('')
+    setMessage("");
+    setMessageType("");
   }
 
   function handleAvatarChange(event) {
-    const file = event.target.files?.[0]
+    const file = event.target.files?.[0];
 
-    if (!file) return
+    if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      setMessage('Vui lòng chọn file ảnh.')
-      return
+    if (!file.type.startsWith("image/")) {
+      setMessageType("error");
+      setMessage("Vui lòng chọn file ảnh.");
+      return;
     }
 
     if (file.size > 700 * 1024) {
-      setMessage('Ảnh cần nhỏ hơn 700KB.')
-      return
+      setMessageType("error");
+      setMessage("Ảnh cần nhỏ hơn 700KB.");
+      return;
     }
 
-    const reader = new FileReader()
+    const reader = new FileReader();
 
     reader.onload = () => {
       setForm((current) => ({
         ...current,
         avatar: reader.result,
-      }))
-    }
+      }));
+    };
 
-    reader.readAsDataURL(file)
+    reader.readAsDataURL(file);
   }
 
-  function handleSubmit(event) {
-    event.preventDefault()
+  async function handleSubmit(event) {
+    event.preventDefault();
 
-    const result = updateUserProfile(form)
+    if (!form.name.trim()) {
+      setMessageType("error");
+      setMessage("Vui lòng nhập họ và tên.");
+      return;
+    }
+
+    if (isChangingPassword && !form.password) {
+      setMessageType("error");
+      setMessage("Vui lòng nhập mật khẩu mới.");
+      return;
+    }
+
+    if (isChangingPassword && form.password.length < 8) {
+      setMessageType("error");
+      setMessage("Mật khẩu mới cần có ít nhất 8 ký tự.");
+      return;
+    }
+
+    if (isChangingPassword && form.password !== form.confirmPassword) {
+      setMessageType("error");
+      setMessage("Xác nhận mật khẩu chưa khớp.");
+      return;
+    }
+
+    if (
+      !window.confirm(
+        isChangingPassword
+          ? "Xác nhận đổi mật khẩu và lưu thông tin?"
+          : "Xác nhận lưu thay đổi thông tin cá nhân?",
+      )
+    )
+      return;
+
+    const result = await updateUserProfile({
+      name: form.name,
+      phone: form.phone,
+      avatar: form.avatar,
+      password: isChangingPassword ? form.password : "",
+    });
 
     if (!result.ok) {
-      setMessage(result.message)
-      return
+      setMessageType("error");
+      setMessage(result.message);
+      return;
     }
 
-    setUser(result.user)
-    setMessage('Đã lưu thông tin cá nhân.')
+    setUser(result.user);
+    setForm((current) => ({
+      ...current,
+      name: result.user.name,
+      phone: result.user.phone || "",
+      avatar: result.user.avatar || "",
+      password: "",
+      confirmPassword: "",
+    }));
+    setIsChangingPassword(false);
+    setMessageType("success");
+    setMessage(
+      isChangingPassword
+        ? "Đã đổi mật khẩu và lưu thông tin cá nhân."
+        : "Đã lưu thông tin cá nhân.",
+    );
   }
 
-  function handleLogout() {
-    logoutUser()
-    navigate('/')
+  async function handleLogout() {
+    if (!window.confirm("Bạn có chắc muốn đăng xuất?")) return;
+    await logoutUser();
+    navigate("/");
+  }
+
+  function handleTogglePasswordChange() {
+    setIsChangingPassword((current) => !current);
+    setForm((current) => ({
+      ...current,
+      password: "",
+      confirmPassword: "",
+    }));
+    setMessage("");
+    setMessageType("");
+  }
+
+  async function handleForgotPassword() {
+    navigate("/forgot-password");
   }
 
   return (
@@ -125,7 +199,7 @@ function CustomerProfilePage() {
         <button
           className="bb-brand"
           type="button"
-          onClick={() => navigate('/customer')}
+          onClick={() => navigate("/customer")}
         >
           <span>B</span>
           Blossom Brew
@@ -136,7 +210,7 @@ function CustomerProfilePage() {
         <nav className="bb-sidebar-nav">
           {navigationItems.map((item) => (
             <button
-              className={item.active ? 'bb-nav-item active' : 'bb-nav-item'}
+              className={item.active ? "bb-nav-item active" : "bb-nav-item"}
               key={item.label}
               type="button"
               onClick={() => navigate(item.to)}
@@ -179,7 +253,7 @@ function CustomerProfilePage() {
             <button
               className="bb-cart-button"
               type="button"
-              onClick={() => navigate('/customer/cart')}
+              onClick={() => navigate("/customer/cart")}
             >
               Giỏ hàng <b>{getCartCount()}</b>
             </button>
@@ -204,8 +278,10 @@ function CustomerProfilePage() {
                 <span className="bb-profile-avatar">{initials}</span>
               )}
 
-              <strong>{form.name || 'Chưa có tên'}</strong>
-              <small>{membershipLabel} · {Number(user.points || 0)} điểm</small>
+              <strong>{form.name || "Chưa có tên"}</strong>
+              <small>
+                {membershipLabel} · {Number(user.points || 0)} điểm
+              </small>
 
               <label className="bb-avatar-upload">
                 Thay ảnh đại diện
@@ -245,17 +321,70 @@ function CustomerProfilePage() {
                 <input value={user.email} disabled />
               </label>
 
-              {message && <p className="bb-profile-message">{message}</p>}
+              {isChangingPassword && (
+                <>
+                  <label>
+                    MẬT KHẨU MỚI
+                    <input
+                      autoComplete="new-password"
+                      name="password"
+                      type="password"
+                      value={form.password}
+                      onChange={handleChange}
+                      placeholder="Ít nhất 8 ký tự"
+                    />
+                  </label>
 
-              <button className="primary-button" type="submit">
-                Lưu thay đổi
-              </button>
+                  <label>
+                    XÁC NHẬN MẬT KHẨU MỚI
+                    <input
+                      autoComplete="new-password"
+                      name="confirmPassword"
+                      type="password"
+                      value={form.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="Nhập lại mật khẩu mới"
+                    />
+                  </label>
+                </>
+              )}
+
+              {message && (
+                <p className={`bb-profile-message ${messageType}`}>{message}</p>
+              )}
+
+              <div className="bb-profile-actions">
+                <button className="primary-button" type="submit">
+                  {isChangingPassword ? "Lưu mật khẩu mới" : "Lưu thay đổi"}
+                </button>
+                <button
+                  className="bb-profile-action"
+                  type="button"
+                  onClick={handleTogglePasswordChange}
+                >
+                  {isChangingPassword ? "Hủy đổi mật khẩu" : "Đổi mật khẩu"}
+                </button>
+                <button
+                  className="bb-profile-action"
+                  type="button"
+                  onClick={handleForgotPassword}
+                >
+                  Quên mật khẩu?
+                </button>
+                <button
+                  className="bb-profile-action bb-profile-logout-button"
+                  type="button"
+                  onClick={handleLogout}
+                >
+                  Đăng xuất
+                </button>
+              </div>
             </form>
           </div>
         </section>
       </main>
     </div>
-  )
+  );
 }
 
-export default CustomerProfilePage
+export default CustomerProfilePage;

@@ -1,12 +1,12 @@
-import { Navigate } from 'react-router-dom'
-import CashierShell from '../../components/CashierShell'
-import RoleGuestHome from '../../components/RoleGuestHome'
-import { getCurrentUser } from '../../services/authService'
+import { Navigate } from "react-router-dom";
+import CashierShell from "../../components/CashierShell";
+import RoleGuestHome from "../../components/RoleGuestHome";
+import { getCurrentUser } from "../../services/authService";
 
 function CashierHomePage() {
-  const user = getCurrentUser()
+  const user = getCurrentUser();
 
-  if (!user || user.role !== 'cashier') return <Navigate to="/login" replace />
+  if (!user || user.role !== "cashier") return <Navigate to="/login" replace />;
 
   return (
     <CashierShell active="" topbarTitle="Trang chủ." user={user}>
@@ -14,7 +14,7 @@ function CashierHomePage() {
         <RoleGuestHome role="cashier" />
       </section>
     </CashierShell>
-  )
+  );
 }
 
-export default CashierHomePage
+export default CashierHomePage;

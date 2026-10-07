@@ -46,8 +46,8 @@ function CashierShell({
     return subscribeNotifications(refreshUnreadCount)
   }, [notificationUserId, notificationUserRole])
 
-  function handleLogout() {
-    logoutUser()
+  async function handleLogout() {
+    await logoutUser()
     navigate('/')
   }
 
@@ -57,7 +57,7 @@ function CashierShell({
         <button
           className="cashier-brand"
           type="button"
-          onClick={() => navigate('/cashier/home')}
+          onClick={() => navigate('/cashier')}
         >
           <span>B</span>
           Blossom Brew

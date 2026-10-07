@@ -1,90 +1,104 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { loginUser } from '../../services/authService'
+import { useState } from "react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import {
+  loginUser,
+  roleHome,
+  useCurrentUser,
+} from "../../services/authService";
 
 function LoginPage() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const user = useCurrentUser();
   const [form, setForm] = useState({
-    email: '',
-    password: '',
-  })
-  const [touched, setTouched] = useState({})
-  const [loginError, setLoginError] = useState('')
-  const [success, setSuccess] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
+    email: "",
+    password: "",
+  });
+  const [touched, setTouched] = useState({});
+  const [loginError, setLoginError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   function validate(values) {
-    const errors = {}
+    const errors = {};
 
     if (!values.email.trim()) {
-      errors.email = 'Vui lòng nhập email.'
+      errors.email = "Vui lòng nhập email.";
     } else if (!/^\S+@\S+\.\S+$/.test(values.email)) {
-      errors.email = 'Email không đúng định dạng.'
+      errors.email = "Email không đúng định dạng.";
     }
 
     if (!values.password) {
-      errors.password = 'Vui lòng nhập mật khẩu.'
+      errors.password = "Vui lòng nhập mật khẩu.";
     }
 
-    return errors
+    return errors;
   }
 
-  const errors = validate(form)
-  const isFormValid = Object.keys(errors).length === 0 && !loginError
+  const errors = validate(form);
+  const isFormValid = Object.keys(errors).length === 0;
 
   function handleChange(event) {
-    const { name, value } = event.target
+    const { name, value } = event.target;
 
     setForm((currentForm) => ({
       ...currentForm,
       [name]: value,
-    }))
+    }));
 
     setTouched((currentTouched) => ({
       ...currentTouched,
       [name]: true,
-    }))
+    }));
 
-    setLoginError('')
-    setSuccess('')
+    setLoginError("");
   }
 
   function handleBlur(event) {
     setTouched((currentTouched) => ({
       ...currentTouched,
       [event.target.name]: true,
-    }))
+    }));
   }
 
-  function handleSubmit(event) {
-    event.preventDefault()
+  async function handleSubmit(event) {
+    event.preventDefault();
 
-    setTouched({ email: true, password: true })
+    setTouched({ email: true, password: true });
 
-    if (!isFormValid) return
+    if (!isFormValid || submitting) return;
 
-    const result = loginUser(form)
+    setSubmitting(true);
+    setLoginError("");
+
+    const result = await loginUser(form);
 
     if (!result.ok) {
-      setLoginError(result.message)
-      return
+      setLoginError(result.message);
+      setSubmitting(false);
+      return;
     }
 
-    setSuccess(`Đăng nhập thành công. Chào ${result.user.name}!`)
-
-    const destination =
-      result.user.role === 'cashier'
-        ? '/cashier'
-        : result.user.role === 'admin'
-          ? '/admin'
-          : '/customer'
-
-    window.setTimeout(() => navigate(destination), 600)
+    navigate(roleHome(result.user.role), { replace: true });
   }
+
+  if (user) return <Navigate to={roleHome(user.role)} replace />;
 
   return (
     <main className="register-page auth-page">
-      <Link className="auth-brand" to="/" aria-label="Về trang chủ Blossom Brew">
+      <div className="brew-demo-access">
+        <b>Tài khoản thử nghiệm</b>
+        <p>Customer: customer@blossombrew.vn · Customer123</p>
+        <p>Cashier: cashier@blossombrew.vn · Cashier123</p>
+        <p>Admin: admin@blossombrew.vn · Admin123</p>
+        <small>
+          Đăng nhập bằng email/mật khẩu tương ứng để kiểm tra từng vai trò.
+        </small>
+      </div>
+      <Link
+        className="auth-brand"
+        to="/"
+        aria-label="Về trang chủ Blossom Brew"
+      >
         <span>B</span>
         Blossom Brew
       </Link>
@@ -101,7 +115,7 @@ function LoginPage() {
           <label>
             EMAIL <span className="required-mark">*</span>
             <input
-              className={touched.email && errors.email ? 'input-error' : ''}
+              className={touched.email && errors.email ? "input-error" : ""}
               name="email"
               type="email"
               value={form.email}
@@ -120,11 +134,11 @@ function LoginPage() {
               <input
                 className={
                   touched.password && (errors.password || loginError)
-                    ? 'input-error'
-                    : ''
+                    ? "input-error"
+                    : ""
                 }
                 name="password"
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 value={form.password}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -135,7 +149,7 @@ function LoginPage() {
                 type="button"
                 onClick={() => setShowPassword((current) => !current)}
               >
-                {showPassword ? 'Ẩn' : 'Hiện'}
+                {showPassword ? "Ẩn" : "Hiện"}
               </button>
             </div>
             {touched.password && (errors.password || loginError) && (
@@ -145,14 +159,12 @@ function LoginPage() {
             )}
           </label>
 
-          {success && <p className="form-success">{success}</p>}
-
           <button
             className="primary-button full-button"
             type="submit"
-            disabled={!isFormValid}
+            disabled={!isFormValid || submitting}
           >
-            Đăng nhập
+            {submitting ? "Đang đăng nhập…" : "Đăng nhập"}
           </button>
 
           <p className="forgot-password-link">
@@ -165,7 +177,7 @@ function LoginPage() {
         </p>
       </section>
     </main>
-  )
+  );
 }
 
-export default LoginPage
+export default LoginPage;

@@ -602,6 +602,18 @@ h2 {
   border-color: #a04d43;
 }
 
+/* Inline validation is always visually distinct from helper/success messages. */
+.field-error {
+  color: #c43f3f;
+}
+
+input.input-error,
+textarea.input-error,
+select.input-error {
+  border-color: #c43f3f !important;
+  box-shadow: 0 0 0 3px rgba(196, 63, 63, 0.12);
+}
+
 .primary-button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
@@ -2634,6 +2646,18 @@ h2 {
   margin: 18px 0;
   color: #557747;
   font-size: 11px;
+}
+
+.bb-profile-message.error,
+.cashier-profile-message.error,
+.admin-form-message.error {
+  color: #c43f3f;
+}
+
+.bb-profile-message.success,
+.cashier-profile-message.success,
+.admin-form-message.success {
+  color: #557747;
 }
 
 .bb-profile-form .primary-button:disabled {
@@ -7767,3 +7791,2463 @@ button:not(:disabled):focus-visible {
   outline: 2px solid #6d4b3a;
   outline-offset: 3px;
 }
+
+/* Admin workspace — visual system aligned to the approved Admin UI. */
+.admin-dashboard {
+  grid-template-columns: 240px minmax(0, 1fr);
+  color: #563a2d;
+  background: #fcf9f6;
+}
+
+.admin-sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
+  padding: 32px 20px 28px;
+  background: #fffefc;
+  border-right-color: #eadbd0;
+}
+
+.admin-brand { color: #513126; font-size: 21px !important; }
+.admin-brand > span { width: 31px; height: 31px; border-color: #6e4b3d; }
+.admin-sidebar-label { margin: 48px 9px 14px; color: #ac9384; }
+.admin-nav { gap: 5px; }
+
+.admin-nav-item {
+  min-height: 40px;
+  padding: 10px 12px;
+  color: #a48b7e;
+  border-radius: 7px;
+}
+
+.admin-nav-item span { width: 16px; color: #bc8d6e; font-size: 14px; text-align: center; }
+.admin-nav-item:hover,
+.admin-nav-item.active { color: #5c392c; background: #f4ece5 !important; }
+
+.admin-profile { margin-top: auto; padding-top: 18px; border-top-color: #e7d8cd; }
+.admin-profile strong { color: #513126; }
+.admin-avatar { width: 32px; height: 32px; background: #563428; }
+.admin-profile button { display: none; }
+
+.admin-main { min-width: 0; background: #fcf9f6; }
+
+.admin-topbar {
+  min-height: 72px;
+  height: auto;
+  padding: 13px 48px;
+  color: #a48b7e;
+  background: #fcf8f4;
+  border-bottom-color: #eadbd0;
+}
+
+.admin-topbar > span:first-child {
+  color: #9d8577;
+  font-size: 10px;
+  letter-spacing: .13em;
+}
+
+.admin-topbar > span + span { color: #a48b7e; font-size: 12px; }
+
+.admin-topbar .admin-page-title h1 {
+  margin: 0;
+  color: #4b2e24;
+  font: 700 clamp(27px, 2.4vw, 37px) / 1.1 'Playfair Display', Georgia, serif;
+  letter-spacing: -0.035em;
+}
+
+.admin-topbar .admin-page-title p {
+  margin: 4px 0 0;
+  color: #aa9184;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.admin-topbar > span:last-child {
+  flex: 0 0 auto;
+  align-self: center;
+  color: #9d8577;
+  white-space: nowrap;
+}
+
+.admin-content {
+  width: min(1110px, 100%);
+  min-height: calc(100vh - 72px);
+  box-sizing: border-box;
+  padding: 42px 48px 68px;
+  background: #fcf9f6;
+}
+
+.admin-eyebrow { display: none; }
+.admin-content h1 { color: #4b2e24; font-size: clamp(32px, 3vw, 42px); line-height: 1.12; }
+.admin-content h2 { color: #4b2e24; }
+
+.admin-menu-heading p:not(.admin-eyebrow),
+.admin-orders-heading p:not(.admin-eyebrow),
+.admin-members-heading p:not(.admin-eyebrow),
+.admin-voucher-heading p:not(.admin-eyebrow),
+.admin-cashiers-heading p:not(.admin-eyebrow),
+.admin-reports-heading p:not(.admin-eyebrow),
+.admin-notices-heading p:not(.admin-eyebrow),
+.admin-profile-heading p:not(.admin-eyebrow),
+.admin-lead {
+  color: #a28b7e;
+  font-size: 12px !important;
+  line-height: 1.55;
+}
+
+.admin-primary-button {
+  min-height: 40px;
+  padding: 10px 16px;
+  color: #fff;
+  background: #593629;
+  border: 1px solid #593629;
+  border-radius: 5px;
+  box-shadow: none;
+  font-size: 11px;
+}
+
+.admin-export-button,
+.admin-outline-button {
+  min-height: 40px;
+  padding: 10px 15px;
+  color: #6d4d3d;
+  background: #fffefc;
+  border-color: #ddc7b7;
+  border-radius: 5px;
+  font-size: 11px;
+}
+
+.admin-menu-toolbar input,
+.admin-menu-toolbar select,
+.admin-orders-toolbar input,
+.admin-orders-toolbar select,
+.admin-members-toolbar input,
+.admin-members-toolbar select,
+.admin-voucher-toolbar input,
+.admin-voucher-toolbar select,
+.admin-cashiers-toolbar input,
+.admin-cashiers-toolbar select {
+  min-height: 40px;
+  box-sizing: border-box;
+  color: #6b4e3f;
+  background: #fffefc;
+  border-color: #dfcbbb;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.admin-menu-toolbar > div,
+.admin-voucher-toolbar-actions,
+.admin-cashiers-toolbar-actions,
+.admin-members-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-menu-toolbar .admin-primary-button,
+.admin-voucher-toolbar-actions .admin-primary-button,
+.admin-cashiers-toolbar-actions .admin-primary-button,
+.admin-members-toolbar-actions .admin-primary-button {
+  min-width: 132px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.admin-menu-table,
+.admin-orders-table-figma,
+.admin-members-table-figma,
+.admin-voucher-table,
+.admin-cashiers-table {
+  overflow: hidden;
+  background: #fffefc;
+  border-color: #e6d2c2;
+  border-radius: 2px;
+}
+
+.admin-menu-row,
+.admin-orders-row-figma,
+.admin-members-row-figma,
+.admin-voucher-row,
+.admin-cashiers-row {
+  min-height: 58px;
+  padding-right: 18px;
+  padding-left: 18px;
+  color: #634a3d;
+  background: #fffefc;
+  border-bottom-color: #efdfd4;
+  font-size: 11px;
+}
+
+.admin-menu-header,
+.admin-orders-header-figma,
+.admin-members-header-figma,
+.admin-voucher-header,
+.admin-cashiers-header {
+  min-height: 44px;
+  color: #aa9385;
+  background: #fffefc;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.admin-menu-product strong,
+.admin-order-customer strong,
+.admin-member-cell strong,
+.admin-cashier-name strong,
+.admin-cashier-contact strong,
+.admin-voucher-row strong { color: #553a2d; font-size: 11px; }
+
+.admin-menu-product small,
+.admin-order-customer small,
+.admin-member-cell small,
+.admin-cashier-name small,
+.admin-cashier-contact small,
+.admin-voucher-row small { color: #a58b7c; font-size: 10px; }
+
+.admin-menu-status,
+.admin-order-status-text,
+.admin-member-rank,
+.admin-cashier-status,
+.admin-voucher-row .admin-available,
+.admin-voucher-row .admin-unavailable {
+  min-width: 90px;
+  padding: 6px 8px;
+  border-radius: 0;
+  font-size: 10px;
+  text-align: left;
+}
+
+.admin-menu-status.active,
+.admin-cashier-status.active,
+.admin-voucher-row .admin-available,
+.admin-order-status-text.completed,
+.admin-member-rank.gold,
+.admin-member-rank.platinum { color: #719164; background: #ebf4e7; }
+
+.admin-menu-status.inactive,
+.admin-cashier-status.inactive,
+.admin-voucher-row .admin-unavailable,
+.admin-order-status-text.cancelled { color: #b67871; background: #f9eae8; }
+
+.admin-order-status-text.pending,
+.admin-order-status-text.processing,
+.admin-member-rank.silver { color: #956f5b; background: #f7eee4; }
+
+.admin-menu-actions > button,
+.admin-cashier-actions button,
+.admin-product-actions button,
+.admin-order-detail-figma,
+.admin-member-detail {
+  min-height: 28px;
+  color: #745747;
+  background: #f5eee8;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: 10px;
+}
+
+.admin-figma-heading,
+.admin-menu-heading,
+.admin-orders-heading,
+.admin-members-heading,
+.admin-voucher-heading,
+.admin-cashiers-heading,
+.admin-reports-heading,
+.admin-notices-heading,
+.admin-profile-heading { margin-bottom: 30px; }
+
+.admin-figma-heading,
+.admin-profile-heading { display: none; }
+.admin-menu-heading > div:first-child,
+.admin-orders-heading > div:first-child,
+.admin-members-heading > div:first-child,
+.admin-voucher-heading > div:first-child,
+.admin-cashiers-heading > div:first-child,
+.admin-reports-heading > div:first-child,
+.admin-notices-heading > div:first-child { display: none; }
+.admin-menu-heading,
+.admin-orders-heading,
+.admin-members-heading,
+.admin-voucher-heading,
+.admin-cashiers-heading,
+.admin-reports-heading,
+.admin-notices-heading { justify-content: flex-end; }
+.admin-notices-heading { justify-content: flex-start; }
+
+.admin-figma-kpis article,
+.admin-report-kpis article,
+.admin-revenue-chart-card,
+.admin-favorite-card,
+.admin-report-card,
+.admin-profile-summary,
+.admin-profile-form {
+  background: #fffefc;
+  border-color: #e6d2c2;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.admin-figma-kpis article { min-height: 128px; padding: 22px; }
+.admin-figma-kpis article > strong,
+.admin-report-kpis strong { color: #503126; font-size: 28px; }
+.admin-kpi-icon { width: 29px; height: 29px; color: #b68664; background: #f5eee8; }
+.admin-overview-panels { gap: 16px; }
+.admin-revenue-chart-card,
+.admin-favorite-card { padding: 22px; }
+.admin-panel-title h2 { font-size: 23px; }
+
+.admin-notice-list { max-width: none; background: #fffefc; border-top: 1px solid #e6d2c2; }
+.admin-notice-item { padding: 20px 0; background: #fffefc; border-bottom-color: #e8d8cd; }
+.admin-notice-item.unread { background: #fffefc; }
+.admin-notice-number { color: #c89a72; }
+
+.admin-profile-layout { gap: 16px; grid-template-columns: 290px minmax(0, 1fr); }
+.admin-profile-summary,.admin-profile-form { padding: 24px; }
+.admin-profile-form input { border-bottom-color: #dfcbbb; }
+.admin-avatar-upload { background: #f5eee8; }
+
+@media (max-width: 900px) {
+  .admin-dashboard { grid-template-columns: 1fr; }
+  .admin-sidebar { position: static; height: auto; min-height: auto; }
+  .admin-profile { margin-top: 24px; }
+  .admin-content { width: 100%; padding: 28px 20px 48px; }
+  .admin-topbar { padding: 12px 20px; }
+  .admin-menu-heading,.admin-orders-heading,.admin-members-heading,.admin-voucher-heading,.admin-cashiers-heading,.admin-reports-heading,.admin-notices-heading { align-items: flex-start; gap: 14px; }
+}
+
+/* Desktop composition used by the approved Admin screens.
+   The content intentionally stays on the left, leaving a quiet workspace area on the right. */
+@media (min-width: 901px) {
+  .admin-dashboard {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .admin-sidebar {
+    padding: 28px 18px 24px;
+  }
+
+  .admin-topbar,
+  .admin-content {
+    width: 100%;
+    max-width: none;
+  }
+
+  .admin-topbar {
+    min-height: 82px;
+    padding: 15px 48px;
+  }
+
+  .admin-content {
+    padding: 46px 48px 72px;
+  }
+}
+
+.admin-sidebar {
+  background: #fffefd;
+}
+
+.admin-brand {
+  gap: 9px;
+  color: #553529;
+  letter-spacing: -0.025em;
+}
+
+.admin-brand > span {
+  border-color: #806052;
+  color: #654235;
+}
+
+.admin-sidebar-label {
+  margin-top: 42px;
+  margin-bottom: 15px;
+  font-size: 9px !important;
+  letter-spacing: .14em;
+}
+
+.admin-nav {
+  gap: 7px;
+}
+
+.admin-nav-item {
+  min-height: 38px;
+  padding: 8px 11px;
+  color: #a48d7f;
+  font-size: 11px !important;
+}
+
+.admin-nav-item span {
+  color: #c69d7c;
+  font-size: 12px !important;
+}
+
+.admin-nav-item:hover,
+.admin-nav-item.active {
+  color: #614134;
+  background: #f5eee7 !important;
+}
+
+.admin-profile {
+  padding-top: 17px;
+}
+
+.admin-profile strong {
+  font-size: 10px !important;
+}
+
+.admin-profile small {
+  font-size: 9px !important;
+}
+
+.admin-avatar {
+  width: 31px;
+  height: 31px;
+  font-size: 9px;
+}
+
+.admin-topbar {
+  align-items: center;
+  background: #fcf9f6;
+  border-bottom: 1px solid #e8d7ca;
+}
+
+.admin-topbar .admin-page-title h1 {
+  font-size: clamp(26px, 2.15vw, 34px);
+  letter-spacing: -0.045em;
+}
+
+.admin-topbar .admin-page-title p {
+  max-width: 570px;
+  color: #a89184;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.admin-topbar > span:last-child {
+  color: #947c70;
+  font-size: 10px;
+}
+
+.admin-topbar > span:last-child::after {
+  margin-left: 10px;
+  color: #815b47;
+  content: '✦';
+  font-size: 11px;
+}
+
+.admin-figma-dashboard .admin-topbar > span:last-child {
+  padding: 10px 13px;
+  border: 1px solid #dec9ba;
+}
+
+.admin-figma-dashboard .admin-topbar > span:last-child::after {
+  content: '';
+}
+
+.admin-profile-page .admin-topbar .admin-page-title p {
+  display: none;
+}
+
+.admin-content {
+  background: #fcf9f6;
+}
+
+.admin-menu-toolbar,
+.admin-orders-toolbar,
+.admin-members-toolbar,
+.admin-voucher-toolbar,
+.admin-cashiers-toolbar {
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.admin-menu-toolbar input,
+.admin-orders-toolbar input,
+.admin-members-toolbar input,
+.admin-voucher-toolbar input,
+.admin-cashiers-toolbar input {
+  width: 255px;
+}
+
+.admin-menu-toolbar select,
+.admin-orders-toolbar select,
+.admin-members-toolbar select,
+.admin-voucher-toolbar select,
+.admin-cashiers-toolbar select {
+  padding-right: 28px;
+}
+
+.admin-menu-toolbar > div,
+.admin-voucher-toolbar-actions,
+.admin-cashiers-toolbar-actions,
+.admin-members-toolbar-actions {
+  justify-content: flex-end;
+}
+
+.admin-primary-button {
+  min-height: 40px;
+  padding: 9px 14px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.admin-export-button,
+.admin-outline-button {
+  min-height: 38px;
+  padding: 9px 14px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.admin-menu-table,
+.admin-orders-table-figma,
+.admin-members-table-figma,
+.admin-voucher-table,
+.admin-cashiers-table {
+  border-color: #e4cfbf;
+}
+
+.admin-menu-row,
+.admin-orders-row-figma,
+.admin-members-row-figma,
+.admin-voucher-row,
+.admin-cashiers-row {
+  min-height: 56px;
+  padding-right: 14px;
+  padding-left: 14px;
+  border-bottom-color: #ebddd3;
+}
+
+.admin-menu-header,
+.admin-orders-header-figma,
+.admin-members-header-figma,
+.admin-voucher-header,
+.admin-cashiers-header {
+  min-height: 42px;
+  color: #ad978a;
+  font-size: 8px;
+}
+
+.admin-menu-row,
+.admin-orders-row-figma,
+.admin-members-row-figma,
+.admin-voucher-row,
+.admin-cashiers-row,
+.admin-menu-product strong,
+.admin-order-customer strong,
+.admin-member-cell strong,
+.admin-cashier-name strong,
+.admin-cashier-contact strong,
+.admin-voucher-row strong {
+  font-size: 10px;
+}
+
+.admin-menu-product small,
+.admin-order-customer small,
+.admin-member-cell small,
+.admin-cashier-name small,
+.admin-cashier-contact small,
+.admin-voucher-row small {
+  font-size: 9px;
+}
+
+.admin-menu-status,
+.admin-order-status-text,
+.admin-member-rank,
+.admin-cashier-status,
+.admin-voucher-row .admin-available,
+.admin-voucher-row .admin-unavailable {
+  min-width: 0;
+  padding: 6px 8px;
+  font-size: 9px;
+}
+
+.admin-voucher-page .admin-voucher-row .admin-available,
+.admin-voucher-page .admin-voucher-row .admin-unavailable {
+  border-radius: 0;
+  font-size: 9px;
+}
+
+.admin-menu-actions > button,
+.admin-cashier-actions button,
+.admin-product-actions button,
+.admin-order-detail-figma,
+.admin-member-detail {
+  min-height: 26px;
+  font-size: 9px;
+}
+
+.admin-orders-heading {
+  margin-bottom: 15px;
+}
+
+.admin-orders-heading .admin-export-button {
+  margin-left: auto;
+}
+
+.admin-notices-heading {
+  margin-bottom: 26px;
+}
+
+.admin-notice-list {
+  border-top-color: #e4cfbf;
+}
+
+.admin-notice-item {
+  grid-template-columns: 42px minmax(0, 1fr) 92px 8px;
+  gap: 14px;
+  min-height: 74px;
+  padding: 16px 10px;
+  border-bottom-color: #e7d9cf;
+}
+
+.admin-notice-number {
+  font-size: 18px;
+}
+
+.admin-notice-copy strong {
+  font-size: 12px;
+}
+
+.admin-notice-copy small,
+.admin-notice-time {
+  font-size: 10px;
+}
+
+.admin-profile-layout {
+  margin-top: 0;
+}
+
+.admin-profile-summary,
+.admin-profile-form {
+  min-height: 300px;
+  border-color: #e4cfbf;
+}
+
+.admin-profile-summary > strong {
+  margin-top: 6px;
+  font-size: 19px;
+}
+
+.admin-profile-form h2 {
+  font-size: 25px;
+}
+
+.admin-profile-form label {
+  font-size: 9px;
+}
+
+/* Reports: the data and controls are unchanged; only the visual hierarchy mirrors the supplied screen. */
+.admin-reports-page .admin-reports-heading {
+  min-height: 22px;
+  margin-bottom: 20px;
+}
+
+.admin-reports-page .admin-report-actions {
+  margin-left: auto;
+}
+
+.admin-reports-page .cashier-date-range-filter {
+  gap: 7px;
+}
+
+.admin-reports-page .cashier-date-range-filter label span {
+  display: none;
+}
+
+.admin-reports-page .cashier-date-range-filter input {
+  width: 116px;
+  min-height: 32px;
+  padding: 5px 2px;
+  color: #9c8578;
+  background: transparent;
+  border: 0;
+  font-size: 10px;
+}
+
+.admin-reports-page .cashier-date-range-filter > b {
+  color: #aa9487;
+}
+
+.admin-report-kpis {
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.admin-report-kpis article {
+  display: flex;
+  min-height: 206px;
+  padding: 22px;
+  flex-direction: column;
+  align-items: flex-start;
+  border-color: #e4cfbf;
+}
+
+.admin-report-card-icon {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  margin-bottom: 14px;
+  color: #b88565;
+  background: #f4ede7;
+  font-size: 13px;
+}
+
+.admin-report-kpis article h2 {
+  margin: 0 0 8px;
+  color: #513126;
+  font-size: 21px;
+  line-height: 1.1;
+}
+
+.admin-report-kpis article p {
+  min-height: 42px;
+  margin: 0 0 16px;
+  color: #a18a7e;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.admin-report-kpis article p strong {
+  color: #654435;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.admin-report-kpis .admin-outline-button {
+  margin-top: auto;
+}
+
+.admin-reports-page .admin-report-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-reports-page .admin-revenue-chart-card {
+  grid-column: 1 / -1;
+  min-height: 337px;
+  padding: 22px;
+}
+
+.admin-report-chart-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-report-chart-heading h2 {
+  margin: 0;
+  font-size: 23px;
+}
+
+.admin-report-chart-heading p {
+  margin: 4px 0 0;
+  color: #aa9184;
+  font-size: 10px;
+}
+
+.admin-revenue-line-wrap {
+  margin-top: 14px;
+}
+
+.admin-revenue-line-chart {
+  display: block;
+  width: 100%;
+  height: 190px;
+  overflow: visible;
+}
+
+.admin-revenue-line-chart line {
+  stroke: #f0e7df;
+  stroke-width: 1;
+}
+
+.admin-revenue-line-chart polyline {
+  fill: none;
+  stroke: #56362a;
+  stroke-width: 4;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+.admin-revenue-line-chart circle {
+  fill: #56362a;
+}
+
+.admin-revenue-line-axis {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  padding: 0 3.5%;
+  color: #a18b7f;
+  font-size: 9px;
+  text-align: center;
+}
+
+.admin-reports-page .admin-report-card:not(.admin-revenue-chart-card) {
+  min-height: 220px;
+  padding: 20px;
+}
+
+@media (max-width: 900px) {
+  .admin-topbar,
+  .admin-content {
+    width: 100%;
+  }
+
+  .admin-menu-toolbar,
+  .admin-orders-toolbar,
+  .admin-members-toolbar,
+  .admin-voucher-toolbar,
+  .admin-cashiers-toolbar {
+    gap: 12px;
+  }
+
+  .admin-menu-toolbar input,
+  .admin-orders-toolbar input,
+  .admin-members-toolbar input,
+  .admin-voucher-toolbar input,
+  .admin-cashiers-toolbar input {
+    width: 100%;
+  }
+
+  .admin-reports-page .admin-report-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-reports-page .admin-revenue-chart-card {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-topbar {
+    align-items: flex-start;
+    gap: 12px;
+    flex-direction: column;
+  }
+
+  .admin-topbar > span:last-child {
+    align-self: flex-end;
+  }
+
+  .admin-menu-toolbar > div,
+  .admin-voucher-toolbar-actions,
+  .admin-cashiers-toolbar-actions,
+  .admin-members-toolbar-actions,
+  .admin-orders-toolbar > div {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .admin-report-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-revenue-line-axis {
+    font-size: 8px;
+  }
+}
+
+/* Override older page-specific rules so all Admin list screens share the same compact table rhythm. */
+.admin-menu-page .admin-topbar {
+  height: auto;
+  min-height: 82px;
+  background: #fcf9f6;
+}
+
+.admin-voucher-page .admin-voucher-toolbar,
+.admin-cashiers-page .admin-cashiers-toolbar {
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.admin-voucher-page .admin-voucher-toolbar input,
+.admin-voucher-page .admin-voucher-toolbar select,
+.admin-cashiers-page .admin-cashiers-toolbar input,
+.admin-cashiers-page .admin-cashiers-toolbar select {
+  height: 40px;
+  color: #6b4e3f;
+  background: #fffefc;
+  border-color: #dfcbbb;
+  font-size: 10px;
+}
+
+.admin-voucher-page .admin-voucher-toolbar input,
+.admin-cashiers-page .admin-cashiers-toolbar input {
+  width: 255px;
+}
+
+.admin-voucher-page .admin-voucher-toolbar select,
+.admin-cashiers-page .admin-cashiers-toolbar select {
+  min-width: 0;
+  padding-right: 28px;
+}
+
+.admin-voucher-page .admin-voucher-table,
+.admin-cashiers-page .admin-cashiers-table {
+  border-color: #e4cfbf;
+  border-radius: 2px;
+  background: #fffefc;
+}
+
+.admin-voucher-page .admin-voucher-row,
+.admin-cashiers-page .admin-cashiers-row {
+  min-height: 56px;
+  padding: 9px 14px;
+  color: #634a3d;
+  background: #fffefc;
+  border-bottom-color: #ebddd3;
+  font: 10px 'Poppins', Arial, sans-serif;
+}
+
+.admin-voucher-page .admin-voucher-header,
+.admin-cashiers-page .admin-cashiers-header {
+  min-height: 42px;
+  color: #ad978a;
+  background: #fffefc;
+  font-size: 8px;
+}
+
+.admin-voucher-page .admin-voucher-row strong,
+.admin-cashiers-page .admin-cashier-name strong,
+.admin-cashiers-page .admin-cashier-contact strong {
+  font-size: 10px;
+}
+
+.admin-voucher-page .admin-voucher-row small,
+.admin-cashiers-page .admin-cashier-name small,
+.admin-cashiers-page .admin-cashier-contact small {
+  font-size: 9px;
+}
+
+.admin-cashiers-page .admin-cashier-status {
+  padding: 6px 8px;
+  border-radius: 0;
+  font-size: 9px;
+}
+
+.admin-cashiers-page .admin-cashier-actions button,
+.admin-menu-page .admin-menu-actions > button {
+  width: 26px;
+  height: 26px;
+}
+
+@media (min-width: 901px) {
+  .admin-menu-page .admin-topbar {
+    padding: 15px 48px;
+  }
+}
+
+/* Admin Orders: stack filters neatly on the right and keep the status/date controls equal. */
+.admin-orders-toolbar {
+  align-items: flex-start;
+}
+
+.admin-orders-toolbar > .admin-orders-filter-stack {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 9px;
+  margin-left: auto;
+}
+
+.admin-orders-filter-stack .admin-orders-status-filter,
+.admin-orders-filter-stack .admin-orders-date-range input {
+  width: 220px;
+  min-width: 220px;
+  height: 40px;
+  min-height: 40px;
+  box-sizing: border-box;
+  font-size: 11px;
+}
+
+.admin-orders-filter-stack .admin-orders-status-filter {
+  padding: 0 34px 0 12px;
+}
+
+.admin-orders-filter-stack .admin-orders-date-range {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.admin-orders-filter-stack .admin-orders-date-range label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  color: #a48b7d;
+  font-size: 9px;
+}
+
+.admin-orders-filter-stack .admin-orders-date-range > b {
+  margin: 0 1px;
+}
+
+.admin-orders-filter-stack .admin-orders-date-range > button {
+  flex: 0 0 25px;
+  margin-left: 2px;
+}
+
+@media (max-width: 900px) {
+  .admin-orders-toolbar > .admin-orders-filter-stack {
+    width: 100%;
+    align-items: flex-start;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-orders-filter-stack .admin-orders-date-range {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .admin-orders-filter-stack .admin-orders-date-range > b {
+    display: none;
+  }
+}
+
+/* Orders toolbar: keep all controls on one compact line, so the table starts higher. */
+.admin-orders-page .admin-orders-toolbar {
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.admin-orders-page .admin-orders-primary-controls,
+.admin-orders-page .admin-orders-secondary-controls {
+  display: flex;
+  align-items: center;
+}
+
+.admin-orders-page .admin-orders-primary-controls {
+  justify-content: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-orders-page .admin-orders-secondary-controls {
+  justify-content: flex-end;
+  gap: 14px;
+  margin-left: auto;
+}
+
+.admin-orders-page .admin-orders-primary-controls > input {
+  width: clamp(220px, 15vw, 250px);
+}
+
+.admin-orders-page .admin-orders-status-filter,
+.admin-orders-page .admin-orders-date-range input {
+  width: clamp(145px, 11vw, 180px);
+  min-width: clamp(145px, 11vw, 180px);
+  height: 40px;
+  min-height: 40px;
+  box-sizing: border-box;
+  font-size: 11px;
+}
+
+.admin-orders-page .admin-orders-status-filter {
+  padding: 0 34px 0 12px;
+}
+
+.admin-orders-page .admin-orders-date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.admin-orders-page .admin-orders-date-range label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  color: #a48b7d;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.admin-orders-page .admin-orders-date-range > b {
+  margin: 0 1px;
+}
+
+.admin-orders-page .admin-orders-date-range > button {
+  flex: 0 0 25px;
+  margin-left: 1px;
+}
+
+.admin-orders-page .admin-orders-secondary-controls .admin-export-button {
+  height: 40px;
+  white-space: nowrap;
+}
+
+@media (max-width: 1160px) and (min-width: 901px) {
+  .admin-orders-page .admin-orders-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .admin-orders-page .admin-orders-secondary-controls {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-orders-page .admin-orders-primary-controls,
+  .admin-orders-page .admin-orders-secondary-controls {
+    width: 100%;
+    flex-wrap: wrap;
+    margin-left: 0;
+  }
+
+  .admin-orders-page .admin-orders-primary-controls > input {
+    flex: 1 1 240px;
+  }
+}
+
+/* Unified Admin toolbar controls: a single size and type scale across list pages. */
+.admin-dashboard {
+  --admin-toolbar-control-width: 150px;
+  --admin-toolbar-control-height: 40px;
+  --admin-toolbar-control-font-size: 10px;
+}
+
+/* The Menu page had older 13px !important rules; keep its toolbar on the shared Admin scale. */
+.admin-menu-page .admin-primary-button {
+  min-width: 0;
+  min-height: var(--admin-toolbar-control-height);
+  padding: 9px 14px;
+  font-size: var(--admin-toolbar-control-font-size) !important;
+  line-height: 1;
+}
+
+.admin-menu-page .admin-menu-toolbar input,
+.admin-menu-page .admin-menu-toolbar select {
+  font-size: var(--admin-toolbar-control-font-size) !important;
+}
+
+.admin-menu-page .admin-menu-toolbar select,
+.admin-members-page .admin-members-toolbar select,
+.admin-voucher-page .admin-voucher-toolbar select,
+.admin-cashiers-page .admin-cashiers-toolbar select,
+.admin-orders-page .admin-orders-status-filter,
+.admin-orders-page .admin-orders-date-range input,
+.admin-reports-page .admin-reports-date-range input {
+  width: var(--admin-toolbar-control-width);
+  min-width: var(--admin-toolbar-control-width);
+  height: var(--admin-toolbar-control-height);
+  min-height: var(--admin-toolbar-control-height);
+  box-sizing: border-box;
+  padding: 0 12px;
+  color: #6b4e3f;
+  background: #fffefc;
+  border: 1px solid #dfcbbb;
+  border-radius: 4px;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: var(--admin-toolbar-control-font-size);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.admin-menu-page .admin-menu-toolbar select,
+.admin-members-page .admin-members-toolbar select,
+.admin-voucher-page .admin-voucher-toolbar select,
+.admin-cashiers-page .admin-cashiers-toolbar select,
+.admin-orders-page .admin-orders-status-filter {
+  padding-right: 32px;
+}
+
+.admin-menu-page .admin-menu-toolbar .admin-primary-button,
+.admin-members-page .admin-members-toolbar-actions .admin-primary-button,
+.admin-voucher-page .admin-voucher-toolbar-actions .admin-primary-button,
+.admin-cashiers-page .admin-cashiers-toolbar-actions .admin-primary-button,
+.admin-orders-page .admin-orders-secondary-controls .admin-export-button,
+.admin-reports-page .admin-report-chart-heading .admin-export-button {
+  width: var(--admin-toolbar-control-width);
+  min-width: var(--admin-toolbar-control-width);
+  height: var(--admin-toolbar-control-height);
+  min-height: var(--admin-toolbar-control-height);
+  box-sizing: border-box;
+  justify-content: center;
+  padding: 0 12px;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: var(--admin-toolbar-control-font-size);
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Keep the report date range visible and in the same toolbar position as other filters. */
+.admin-reports-page .admin-reports-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: var(--admin-toolbar-control-height);
+  margin: 0 0 22px;
+}
+
+.admin-reports-page .admin-reports-date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.admin-reports-page .admin-reports-date-range label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--admin-toolbar-control-height);
+  color: #a48b7d;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.admin-reports-page .admin-reports-date-range label span {
+  display: inline;
+}
+
+.admin-reports-page .admin-reports-date-range > b {
+  margin: 0 1px;
+  color: #aa9487;
+}
+
+.admin-reports-page .admin-reports-date-range > button {
+  flex: 0 0 25px;
+  width: 25px;
+  height: 25px;
+  margin-left: 1px;
+}
+
+@media (max-width: 900px) {
+  .admin-reports-page .admin-reports-toolbar {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-reports-page .admin-reports-date-range {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .admin-reports-page .admin-reports-date-range > b {
+    display: none;
+  }
+
+  .admin-reports-page .admin-reports-date-range label {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* Product modal: collect an explicit price for every supported drink size. */
+.admin-menu-page .admin-product-size-prices {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-menu-page .admin-product-size-prices > span {
+  color: #846d5e;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.admin-menu-page .admin-product-size-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-menu-page .admin-product-size-grid label {
+  margin: 0;
+}
+
+@media (max-width: 520px) {
+  .admin-menu-page .admin-product-size-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Unavailable products remain visible at the end of every menu, but cannot be ordered. */
+.bb-menu-product-card:disabled,
+.guest-product-card:disabled,
+.cashier-product-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+  filter: saturate(0.55);
+}
+
+.bb-menu-product-card:disabled:hover,
+.guest-product-card:disabled:hover,
+.cashier-product-card:disabled:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+.bb-menu-unavailable,
+.cashier-product-unavailable,
+.guest-product-unavailable {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  margin-top: auto;
+  padding: 5px 8px;
+  color: #8a6f61;
+  background: #f1e9e3;
+  border: 1px solid #ddcec3;
+  border-radius: 999px;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.guest-product-unavailable {
+  margin-top: 10px;
+}
+
+/* Admin product editor: choose any supported S/M/L sizes and price each chosen size. */
+.admin-menu-page .admin-product-modal,
+.admin-menu-page .admin-product-detail-modal {
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+}
+
+.admin-menu-page .admin-product-size-prices {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-menu-page .admin-product-size-heading {
+  color: #846d5e;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.admin-menu-page .admin-product-size-heading b {
+  color: #b5534d;
+}
+
+.admin-menu-page .admin-product-size-list {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-menu-page .admin-product-size-option {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 9px 11px;
+  background: #fffdfb;
+  border: 1px solid #e5d4c6;
+  border-radius: 4px;
+}
+
+.admin-menu-page .admin-product-size-option.is-selected {
+  background: #fff9f4;
+  border-color: #cda88d;
+}
+
+.admin-menu-page .admin-product-size-option.has-error,
+.admin-menu-page .admin-product-size-prices.has-error .admin-product-size-list {
+  border-color: #c55c54;
+}
+
+.admin-menu-page .admin-product-size-option > label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #604438;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.admin-menu-page .admin-product-size-option input[type='checkbox'] {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: #6b4534;
+}
+
+.admin-menu-page .admin-product-size-price-input {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-menu-page .admin-product-size-option input[type='number'] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 10px;
+  color: #533a2e;
+  background: #fff;
+  border: 1px solid #dfcbbb;
+  border-radius: 3px;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: 11px;
+}
+
+.admin-menu-page .admin-product-size-option.has-error input[type='number'] {
+  border-color: #c55c54;
+}
+
+.admin-menu-page .admin-product-size-hint,
+.admin-menu-page .admin-optional-label {
+  color: #aa9385;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.admin-menu-page .admin-product-modal label.has-error input,
+.admin-menu-page .admin-product-modal label.has-error select {
+  border-color: #c55c54;
+}
+
+.admin-menu-page .admin-product-modal textarea {
+  min-height: 74px;
+  box-sizing: border-box;
+  padding: 10px 11px;
+  color: #533a2e;
+  background: #fff;
+  border: 1px solid #e5d4c6;
+  border-radius: 3px;
+  font: inherit;
+  resize: vertical;
+}
+
+.admin-menu-page .admin-inline-error {
+  display: block;
+  color: #b5534d;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+
+/* The product name is a detail trigger; edit remains an explicit action icon. */
+.admin-menu-page button.admin-menu-product {
+  width: 100%;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-menu-page button.admin-menu-product:hover strong,
+.admin-menu-page button.admin-menu-product:focus-visible strong {
+  color: #a45e40;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.admin-menu-page button.admin-menu-product:focus-visible {
+  outline: 2px solid #cfa88d;
+  outline-offset: 3px;
+}
+
+/* Read-only product detail popup. */
+.admin-menu-page .admin-product-detail-modal {
+  position: relative;
+  width: min(520px, calc(100vw - 32px));
+  padding: 30px;
+  background: #fffdfb;
+  box-shadow: 0 20px 50px rgba(46, 27, 22, 0.25);
+}
+
+.admin-menu-page .admin-product-detail-modal h2 {
+  margin: 5px 0 22px;
+  color: #432a20;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+}
+
+.admin-menu-page .admin-product-detail-summary {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding-bottom: 17px;
+  border-bottom: 1px solid #eadfd5;
+}
+
+.admin-menu-page .admin-product-detail-thumbnail {
+  display: grid;
+  flex: 0 0 auto;
+  width: 58px;
+  height: 58px;
+  overflow: hidden;
+  color: #785847;
+  background: #ecdece;
+  place-items: center;
+  font-size: 22px;
+}
+
+.admin-menu-page .admin-product-detail-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-menu-page .admin-product-detail-summary div {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-menu-page .admin-product-detail-summary strong {
+  color: #4b3328;
+  font-size: 16px;
+}
+
+.admin-menu-page .admin-product-detail-summary small {
+  color: #a58b7c;
+  font-size: 11px;
+}
+
+.admin-menu-page .admin-product-detail-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 17px 0;
+}
+
+.admin-menu-page .admin-product-detail-meta p,
+.admin-menu-page .admin-product-detail-prices p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+}
+
+.admin-menu-page .admin-product-detail-meta p {
+  padding: 10px 11px;
+  background: #faf5f0;
+}
+
+.admin-menu-page .admin-product-detail-meta span,
+.admin-menu-page .admin-product-detail-section h3 {
+  color: #9d8373;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.admin-menu-page .admin-product-detail-meta strong {
+  color: #5a3e31;
+  font-size: 11px;
+}
+
+.admin-menu-page .admin-product-detail-meta .is-available {
+  color: #5d8560;
+}
+
+.admin-menu-page .admin-product-detail-meta .is-unavailable {
+  color: #af6b58;
+}
+
+.admin-menu-page .admin-product-detail-section {
+  margin: 17px 0;
+}
+
+.admin-menu-page .admin-product-detail-section h3 {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-menu-page .admin-product-detail-prices {
+  display: grid;
+  gap: 7px;
+}
+
+.admin-menu-page .admin-product-detail-prices p {
+  padding: 10px 12px;
+  color: #6a4c3c;
+  background: #fff9f4;
+  border: 1px solid #ead9ce;
+}
+
+.admin-menu-page .admin-product-detail-prices span {
+  font-size: 11px;
+}
+
+.admin-menu-page .admin-product-detail-prices strong {
+  color: #4c3227;
+  font-size: 12px;
+}
+
+.admin-menu-page .admin-product-detail-note {
+  min-height: 36px;
+  margin: 0;
+  padding: 10px 12px;
+  color: #765f52;
+  background: #faf7f4;
+  border: 1px solid #eee2d9;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 520px) {
+  .admin-menu-page .admin-product-size-option {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .admin-menu-page .admin-product-detail-meta {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Profile account actions use the same compact button system for every role. */
+.admin-profile-form .admin-profile-actions,
+.bb-profile-form .bb-profile-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.admin-profile-form .admin-profile-actions .admin-primary-button,
+.bb-profile-form .bb-profile-actions .primary-button {
+  width: auto;
+  margin: 0;
+}
+
+.admin-profile-action,
+.bb-profile-action {
+  min-height: 40px;
+  padding: 9px 13px;
+  color: #765747;
+  background: #fffefc;
+  border: 1px solid #ddc8ba;
+  border-radius: 5px;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-profile-action:hover,
+.bb-profile-action:hover {
+  color: #fff;
+  background: #76503e;
+  border-color: #76503e;
+}
+
+.admin-profile-logout-button,
+.bb-profile-logout-button {
+  color: #a45449;
+  border-color: #dfbbb4;
+}
+
+.admin-profile-logout-button:hover,
+.bb-profile-logout-button:hover {
+  color: #fff;
+  background: #a45449;
+  border-color: #a45449;
+}
+
+@media (max-width: 560px) {
+  .admin-profile-form .admin-profile-actions,
+  .bb-profile-form .bb-profile-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .admin-profile-form .admin-profile-actions button,
+  .bb-profile-form .bb-profile-actions button {
+    width: 100%;
+  }
+}
+
+/* Compact shared pagination/footer rows. */
+.cashier-list-footer {
+  min-height: 36px;
+  gap: 8px;
+  padding: 5px 12px;
+  font-size: 10px;
+}
+
+.cashier-list-footer > div {
+  gap: 8px;
+}
+
+.cashier-list-footer button {
+  width: 24px;
+  height: 24px;
+  font-size: 17px;
+}
+
+.cashier-notice-list .cashier-list-footer {
+  min-height: 36px;
+  padding: 0 10px;
+}
+
+/* Notices show a compact, paginated page rather than making the user scroll. */
+.admin-notices-page .admin-notices-heading {
+  margin-bottom: 16px;
+}
+
+.admin-notices-page .admin-notice-item {
+  min-height: 60px;
+  padding: 10px 8px;
+}
+
+.admin-notices-page .admin-notice-copy {
+  gap: 3px;
+}
+
+.bb-notice-list .bb-notice-item {
+  min-height: 58px;
+  padding: 12px 0;
+}
+
+.bb-notice-list .bb-notice-copy {
+  gap: 4px;
+}
+
+.cashier-notices-content {
+  padding-top: 38px;
+}
+
+.cashier-notices-content .cashier-notices-toolbar {
+  margin-bottom: 10px;
+}
+
+.cashier-notices-content .cashier-notice-item {
+  min-height: 0;
+  padding: 13px 0;
+}
+
+.cashier-notices-content .cashier-notice-copy {
+  padding-right: 14px;
+}
+
+@media (max-width: 740px) {
+  .cashier-list-footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/*
+ * Unified workspace typography
+ *
+ * The app accumulated page-specific font overrides over time, which made the
+ * same type of content render at different sizes between Admin, Cashier and
+ * Customer screens.  Keep one semantic scale here, at the end of the file, so
+ * every workspace inherits the same hierarchy without changing its behaviour.
+ */
+:root {
+  --bb-font-ui: 'Poppins', Arial, sans-serif;
+  --bb-font-display: 'Playfair Display', Georgia, serif;
+  --bb-type-caption: 10px;
+  --bb-type-control: 11px;
+  --bb-type-body: 12px;
+  --bb-type-title: clamp(27px, calc(2.15vw + 1px), 35px);
+  --bb-type-section-title: 23px;
+  --bb-type-modal-title: 26px;
+  --bb-type-metric: 29px;
+}
+
+.admin-dashboard,
+.cashier-dashboard,
+.bb-dashboard {
+  font-family: var(--bb-font-ui);
+  font-size: var(--bb-type-body);
+  line-height: 1.45;
+}
+
+/* A single UI/control scale across all signed-in roles. */
+.admin-dashboard :is(button, input, select, textarea),
+.cashier-dashboard :is(button, input, select, textarea),
+.bb-dashboard :is(button, input, select, textarea) {
+  font-family: var(--bb-font-ui) !important;
+  font-size: var(--bb-type-control) !important;
+}
+
+/* Regular copy and emphasis deliberately keep the same size; only weight changes. */
+.admin-dashboard :is(p, span, li),
+.cashier-dashboard :is(p, span, li),
+.bb-dashboard :is(p, span, li) {
+  font-family: var(--bb-font-ui);
+  font-size: var(--bb-type-body) !important;
+}
+
+.admin-dashboard :is(strong, b),
+.cashier-dashboard :is(strong, b),
+.bb-dashboard :is(strong, b) {
+  font-family: var(--bb-font-ui);
+  font-size: var(--bb-type-body) !important;
+  font-weight: 600;
+}
+
+.admin-dashboard small,
+.cashier-dashboard small,
+.bb-dashboard small {
+  font-family: var(--bb-font-ui);
+  font-size: var(--bb-type-control) !important;
+  font-weight: 400;
+}
+
+/* Brand, navigation and sidebar metadata. */
+.admin-dashboard .admin-brand,
+.cashier-dashboard .cashier-brand,
+.bb-dashboard .bb-brand {
+  font-family: var(--bb-font-display) !important;
+  font-size: 22px !important;
+  font-weight: 700;
+}
+
+.admin-dashboard .admin-brand > span,
+.cashier-dashboard .cashier-brand > span,
+.bb-dashboard .bb-brand > span {
+  font-family: var(--bb-font-ui) !important;
+  font-size: 13px !important;
+  font-weight: 600;
+}
+
+.admin-dashboard .admin-sidebar-label,
+.cashier-dashboard .cashier-sidebar-label,
+.bb-dashboard .bb-sidebar-label {
+  font-size: var(--bb-type-caption) !important;
+  font-weight: 600;
+}
+
+.admin-dashboard .admin-nav-item,
+.cashier-dashboard .cashier-nav-item,
+.bb-dashboard .bb-nav-item {
+  font-size: var(--bb-type-body) !important;
+  font-weight: 400;
+}
+
+.admin-dashboard .admin-nav-item > span,
+.cashier-dashboard .cashier-nav-item > span,
+.bb-dashboard .bb-nav-item > span {
+  font-size: 13px !important;
+}
+
+.admin-dashboard .admin-profile strong,
+.cashier-dashboard .cashier-profile strong,
+.bb-dashboard .bb-sidebar-profile strong {
+  font-size: var(--bb-type-body) !important;
+}
+
+.admin-dashboard .admin-profile small,
+.cashier-dashboard .cashier-profile small,
+.bb-dashboard .bb-sidebar-profile small {
+  font-size: var(--bb-type-control) !important;
+}
+
+.admin-dashboard .admin-avatar,
+.cashier-dashboard .cashier-avatar,
+.bb-dashboard .bb-avatar {
+  font-size: var(--bb-type-caption) !important;
+}
+
+/* The page title has one shared size, regardless of role or page. */
+.admin-dashboard .admin-topbar .admin-page-title h1,
+.admin-dashboard :is(.admin-figma-heading, .admin-menu-heading, .admin-orders-heading, .admin-members-heading, .admin-voucher-heading, .admin-cashiers-heading, .admin-reports-heading, .admin-notices-heading, .admin-profile-heading) h1,
+.cashier-dashboard .cashier-topbar-copy h1,
+.cashier-dashboard .cashier-heading h1,
+.bb-dashboard :is(.bb-page-heading h1, .bb-content > h1, .bb-review-card h1, .bb-checkout-success h1) {
+  color: #4b2e24;
+  font-family: var(--bb-font-display) !important;
+  font-size: var(--bb-type-title) !important;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+}
+
+.admin-dashboard .admin-topbar .admin-page-title p,
+.cashier-dashboard .cashier-topbar-copy h1 + span,
+.bb-dashboard .bb-subtitle {
+  font-size: var(--bb-type-body) !important;
+  line-height: 1.55;
+}
+
+.admin-dashboard :is(.admin-topbar > span:first-child, .admin-eyebrow, .admin-menu-header, .admin-orders-header-figma, .admin-members-header-figma, .admin-voucher-header, .admin-cashiers-header),
+.cashier-dashboard :is(.cashier-topbar-copy p, .cashier-eyebrow, .cashier-orders-header, .cashier-shift-history-labels),
+.bb-dashboard :is(.bb-eyebrow, .bb-order-header) {
+  font-size: var(--bb-type-caption) !important;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.admin-dashboard :is(.admin-topbar > span:last-child, .admin-date-chip),
+.cashier-dashboard :is(.cashier-shift-status, .cashier-order-date, .cashier-shift-date),
+.bb-dashboard .bb-topbar > span {
+  font-size: var(--bb-type-control) !important;
+}
+
+/* Card, form and table headings share a single display hierarchy. */
+.admin-dashboard .admin-content h2,
+.cashier-dashboard .cashier-content h2,
+.bb-dashboard .bb-content h2 {
+  font-family: var(--bb-font-display);
+  font-size: var(--bb-type-section-title) !important;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.admin-dashboard .admin-content h3,
+.cashier-dashboard .cashier-content h3,
+.bb-dashboard .bb-content h3 {
+  font-family: var(--bb-font-ui);
+  font-size: var(--bb-type-body) !important;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.admin-dashboard :is(.admin-product-modal h2, .admin-product-detail-modal h2, .admin-order-modal h2, .admin-member-modal-figma h2, .admin-cashier-modal h2, .admin-profile-form h2, .admin-product-form-card h2),
+.cashier-dashboard :is(.cashier-product-modal h2, .cashier-profile-form h2),
+.bb-dashboard :is(.bb-menu-modal h2, .bb-voucher-modal h2, .bb-profile-form h2) {
+  font-family: var(--bb-font-display);
+  font-size: var(--bb-type-modal-title) !important;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Compact, reusable labels, controls and status pills. */
+.admin-dashboard :is(label, .admin-primary-button, .admin-export-button, .admin-outline-button, .admin-cancel-button, .admin-delete-button, .admin-menu-status, .admin-order-status-text, .admin-member-rank, .admin-cashier-status, .admin-available, .admin-unavailable, .admin-order-detail-figma, .admin-member-detail, .admin-menu-actions > button, .admin-cashier-actions button, .admin-product-actions button),
+.cashier-dashboard :is(label, .cashier-outline-button, .cashier-confirm-button, .cashier-shift-action, .cashier-save-button, .cashier-profile-action, .cashier-detail-button, .cashier-status-select, .cashier-order-status-action > p, .cashier-status-buttons button, .cashier-date-range-filter),
+.bb-dashboard :is(label, .primary-button, .bb-profile-action, .bb-cart-button, .bb-order-filter, .bb-menu-tabs button, .bb-option-buttons button, .bb-detail-button, .bb-review-link, .bb-mark-read-button, .bb-status, .bb-choose-voucher, .bb-back-to-menu) {
+  font-size: var(--bb-type-control) !important;
+}
+
+.admin-dashboard :is(.admin-menu-header > *, .admin-orders-header-figma > *, .admin-members-header-figma > *, .admin-voucher-header > *, .admin-cashiers-header > *),
+.cashier-dashboard :is(.cashier-orders-header > *, .cashier-shift-history-labels > *),
+.bb-dashboard .bb-order-header > * {
+  font-size: var(--bb-type-caption) !important;
+  font-weight: 600;
+}
+
+/* Data rows all use the same body/bold/secondary rhythm. */
+.admin-dashboard :is(.admin-menu-row, .admin-orders-row-figma, .admin-members-row-figma, .admin-voucher-row, .admin-cashiers-row, .admin-notice-item, .admin-order-detail-meta, .admin-order-financial, .admin-modal-items, .admin-product-detail-meta, .admin-product-detail-prices),
+.cashier-dashboard :is(.cashier-orders-row, .cashier-order-detail, .cashier-notice-item, .cashier-shift-history-row, .cashier-order-item, .cashier-member-result, .cashier-member-not-found),
+.bb-dashboard :is(.bb-order-row, .bb-home-order, .bb-notice-item, .bb-cart-item, .bb-checkout-item, .bb-summary-line, .bb-checkout-price-row, .bb-profile-summary, .bb-voucher-card) {
+  font-size: var(--bb-type-body) !important;
+}
+
+.admin-dashboard :is(.admin-menu-product small, .admin-order-customer small, .admin-member-cell small, .admin-cashier-name small, .admin-cashier-contact small, .admin-voucher-row small, .admin-notice-copy small, .admin-notice-time, .admin-product-detail-summary small),
+.cashier-dashboard :is(.cashier-orders-row small, .cashier-notice-copy small, .cashier-notice-time small, .cashier-profile-summary > small, .cashier-shift-summary span),
+.bb-dashboard :is(.bb-order-row small, .bb-home-order small, .bb-notice-copy small, .bb-cart-item-info small, .bb-checkout-item span, .bb-profile-summary > small, .bb-voucher-card p) {
+  font-size: var(--bb-type-control) !important;
+}
+
+/* Numeric or decorative exceptions retain hierarchy without changing normal bold text. */
+.admin-dashboard :is(.admin-figma-kpis article > strong, .admin-report-kpis strong),
+.cashier-dashboard .cashier-shift-summary strong,
+.bb-dashboard :is(.bb-membership-card h2, .bb-home-summary strong) {
+  font-family: var(--bb-font-display) !important;
+  font-size: var(--bb-type-metric) !important;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.admin-dashboard :is(.admin-notice-number, .admin-product-detail-thumbnail),
+.cashier-dashboard :is(.cashier-notice-number, .cashier-product-image, .cashier-modal-image),
+.bb-dashboard :is(.bb-notice-number, .bb-menu-modal-art, .bb-cart-item-art) {
+  font-family: var(--bb-font-display);
+  font-size: 19px !important;
+}
+
+.admin-dashboard :is(.admin-modal-close),
+.cashier-dashboard :is(.cashier-modal-close),
+.bb-dashboard :is(.bb-menu-close, .bb-voucher-close) {
+  font-size: 23px !important;
+}
+
+.bb-dashboard :is(.bb-summary-total, .bb-checkout-total),
+.cashier-dashboard .cashier-total-row {
+  font-size: 14px !important;
+}
+
+.bb-dashboard :is(.bb-summary-total strong, .bb-checkout-total strong),
+.cashier-dashboard .cashier-total-row strong {
+  font-size: 19px !important;
+}
+
+.bb-dashboard :is(.bb-quantity-control button, .bb-cart-voucher button),
+.cashier-dashboard :is(.cashier-quantity button, .cashier-order-item button) {
+  font-size: 16px !important;
+}
+
+/* Guest-facing screens retain their editorial hero scale but share the UI text scale. */
+.guest-page :is(button, input, select, textarea),
+.login-page :is(button, input, select, textarea),
+.register-page :is(button, input, select, textarea),
+.forgot-password-page :is(button, input, select, textarea) {
+  font-family: var(--bb-font-ui);
+  font-size: var(--bb-type-control);
+}
+
+.guest-page :is(.guest-nav button, .guest-login-button, .guest-primary-button, .guest-outline-button, .guest-category-tabs button, .guest-search-input),
+.login-page :is(label, .primary-button, .outline-button),
+.register-page :is(label, .primary-button, .outline-button),
+.forgot-password-page :is(label, .primary-button, .outline-button) {
+  font-size: var(--bb-type-control) !important;
+}
+
+.guest-page .guest-menu-heading h2 {
+  font-family: var(--bb-font-display);
+  font-size: var(--bb-type-title);
+  font-weight: 700;
+}
+
+.guest-page :is(.guest-product-copy small, .guest-product-copy > span),
+.login-page :is(.login-lead, .auth-field small),
+.register-page :is(.register-lead, .auth-field small),
+.forgot-password-page :is(.forgot-lead, .auth-field small) {
+  font-size: var(--bb-type-body);
+}
+
+/* Keep non-text symbols at their intentional visual sizes. */
+.admin-dashboard .admin-kpi-icon {
+  font-size: 17px !important;
+}
+
+.admin-dashboard .admin-report-card-icon {
+  font-size: 14px !important;
+}
+
+.admin-dashboard .admin-product-detail-thumbnail {
+  font-size: 23px !important;
+}
+
+.cashier-dashboard .cashier-product-image {
+  font-size: 26px !important;
+}
+
+.cashier-dashboard .cashier-modal-image {
+  font-size: 45px !important;
+}
+
+.bb-dashboard .bb-voucher-icon {
+  font-size: 17px !important;
+}
+
+.bb-dashboard .bb-menu-modal-art {
+  font-size: 53px !important;
+}
+
+.bb-dashboard .bb-cart-item-art {
+  font-size: 31px !important;
+}
+
+.bb-dashboard .bb-cart-button b,
+.admin-dashboard .admin-notice-count {
+  font-size: var(--bb-type-caption) !important;
+}
+
+.cashier-dashboard .cashier-list-footer button,
+.admin-dashboard button[aria-label^='Trang'],
+.bb-dashboard button[aria-label^='Trang'] {
+  font-size: 15px !important;
+}
+
+.admin-dashboard .admin-modal-total {
+  font-size: 14px !important;
+}
+
+.admin-dashboard .admin-modal-total strong {
+  font-size: 19px !important;
+}
+
+/* The public menu and account pages use the same one-step size increase. */
+.guest-page .guest-brand,
+.role-guest-home .guest-brand {
+  font-size: 24px;
+}
+
+.guest-page .guest-brand-mark,
+.role-guest-home .guest-brand-mark {
+  font-size: 14px;
+}
+
+.guest-page .guest-hero h1,
+.role-guest-home .guest-hero h1 {
+  font-size: clamp(47px, calc(5vw + 1px), 73px);
+}
+
+.guest-page .guest-hero-description,
+.role-guest-home .guest-hero-description {
+  font-size: 16px;
+}
+
+.guest-page .guest-menu-heading > p,
+.role-guest-home .guest-menu-heading > p {
+  font-size: 14px;
+}
+
+.guest-page .guest-product-copy > strong,
+.role-guest-home .guest-product-copy > strong {
+  font-size: 19px;
+}
+
+.guest-page .guest-product-copy > b,
+.role-guest-home .guest-product-copy > b {
+  font-size: 14px;
+}
+
+.guest-page .guest-product-modal h2 {
+  font-size: 31px;
+}
+
+.register-card h1 {
+  font-size: clamp(35px, calc(5vw + 1px), 49px);
+}
+
+.forgot-password-page .forgot-success h2 {
+  font-size: 24px;
+}
+
+@media (max-width: 720px) {
+  .guest-page .guest-brand,
+  .role-guest-home .guest-brand {
+    font-size: 21px;
+  }
+
+  .guest-page .guest-hero h1,
+  .role-guest-home .guest-hero h1 {
+    font-size: clamp(45px, calc(12vw + 1px), 63px);
+  }
+}
+
+/*
+ * Final typography audit
+ * Some legacy page rules use long selectors and !important.  This last layer
+ * deliberately has higher specificity so the same semantic text never grows
+ * on just one screen or role.
+ */
+.admin-dashboard.admin-dashboard.admin-dashboard :is(p, span, li, a, time, em, i),
+.cashier-dashboard.cashier-dashboard.cashier-dashboard :is(p, span, li, a, time, em, i),
+.bb-dashboard.bb-dashboard.bb-dashboard :is(p, span, li, a, time, em, i) {
+  font-family: var(--bb-font-ui) !important;
+  font-size: var(--bb-type-body) !important;
+}
+
+.admin-dashboard.admin-dashboard.admin-dashboard :is(strong, b),
+.cashier-dashboard.cashier-dashboard.cashier-dashboard :is(strong, b),
+.bb-dashboard.bb-dashboard.bb-dashboard :is(strong, b) {
+  font-family: var(--bb-font-ui) !important;
+  font-size: var(--bb-type-body) !important;
+  font-weight: 600;
+}
+
+.admin-dashboard.admin-dashboard.admin-dashboard small,
+.cashier-dashboard.cashier-dashboard.cashier-dashboard small,
+.bb-dashboard.bb-dashboard.bb-dashboard small {
+  font-family: var(--bb-font-ui) !important;
+  font-size: var(--bb-type-control) !important;
+  font-weight: 400;
+}
+
+.admin-dashboard.admin-dashboard.admin-dashboard :is(button, input, select, textarea, option, label),
+.cashier-dashboard.cashier-dashboard.cashier-dashboard :is(button, input, select, textarea, option, label),
+.bb-dashboard.bb-dashboard.bb-dashboard :is(button, input, select, textarea, option, label) {
+  font-family: var(--bb-font-ui) !important;
+  font-size: var(--bb-type-control) !important;
+}
+
+/* Shared desktop page titles. */
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-topbar .admin-page-title h1,
+.admin-dashboard.admin-dashboard.admin-dashboard :is(.admin-figma-heading, .admin-menu-heading, .admin-orders-heading, .admin-members-heading, .admin-voucher-heading, .admin-cashiers-heading, .admin-reports-heading, .admin-notices-heading, .admin-profile-heading) h1,
+.cashier-dashboard.cashier-dashboard.cashier-dashboard :is(.cashier-topbar-copy h1, .cashier-heading h1),
+.bb-dashboard.bb-dashboard.bb-dashboard :is(.bb-page-heading h1, .bb-content > h1, .bb-review-card h1, .bb-checkout-success h1) {
+  font-family: var(--bb-font-display) !important;
+  font-size: var(--bb-type-title) !important;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* Shared section and modal headings. */
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-content h2,
+.cashier-dashboard.cashier-dashboard.cashier-dashboard .cashier-content h2,
+.bb-dashboard.bb-dashboard.bb-dashboard .bb-content h2 {
+  font-family: var(--bb-font-display) !important;
+  font-size: var(--bb-type-section-title) !important;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-content h3,
+.cashier-dashboard.cashier-dashboard.cashier-dashboard .cashier-content h3,
+.bb-dashboard.bb-dashboard.bb-dashboard .bb-content h3 {
+  font-family: var(--bb-font-ui) !important;
+  font-size: var(--bb-type-body) !important;
+  font-weight: 600;
+}
+
+.admin-dashboard.admin-dashboard.admin-dashboard :is(.admin-product-modal h2, .admin-product-detail-modal h2, .admin-order-modal h2, .admin-member-modal-figma h2, .admin-cashier-modal h2, .admin-profile-form h2, .admin-product-form-card h2),
+.cashier-dashboard.cashier-dashboard.cashier-dashboard :is(.cashier-product-modal h2, .cashier-profile-form h2),
+.bb-dashboard.bb-dashboard.bb-dashboard :is(.bb-menu-modal h2, .bb-voucher-modal h2, .bb-profile-form h2) {
+  font-family: var(--bb-font-display) !important;
+  font-size: var(--bb-type-modal-title) !important;
+  font-weight: 700;
+}
+
+/* Captions, headers and secondary data use only the compact scale. */
+.admin-dashboard.admin-dashboard.admin-dashboard :is(.admin-sidebar-label, .admin-eyebrow, .admin-topbar > span:first-child, .admin-menu-header, .admin-orders-header-figma, .admin-members-header-figma, .admin-voucher-header, .admin-cashiers-header),
+.cashier-dashboard.cashier-dashboard.cashier-dashboard :is(.cashier-sidebar-label, .cashier-eyebrow, .cashier-topbar-copy p, .cashier-orders-header, .cashier-shift-history-labels),
+.bb-dashboard.bb-dashboard.bb-dashboard :is(.bb-sidebar-label, .bb-eyebrow, .bb-order-header) {
+  font-size: var(--bb-type-caption) !important;
+  font-weight: 600;
+}
+
+.admin-dashboard.admin-dashboard.admin-dashboard :is(.admin-topbar > span:last-child, .admin-date-chip),
+.cashier-dashboard.cashier-dashboard.cashier-dashboard :is(.cashier-shift-status, .cashier-order-date, .cashier-shift-date),
+.bb-dashboard.bb-dashboard.bb-dashboard .bb-topbar > span {
+  font-size: var(--bb-type-control) !important;
+}
+
+.admin-dashboard.admin-dashboard.admin-dashboard :is(.admin-menu-header > *, .admin-orders-header-figma > *, .admin-members-header-figma > *, .admin-voucher-header > *, .admin-cashiers-header > *),
+.cashier-dashboard.cashier-dashboard.cashier-dashboard :is(.cashier-orders-header > *, .cashier-shift-history-labels > *),
+.bb-dashboard.bb-dashboard.bb-dashboard .bb-order-header > * {
+  font-size: var(--bb-type-caption) !important;
+  font-weight: 600;
+}
+
+.admin-dashboard.admin-dashboard.admin-dashboard :is(.admin-menu-status, .admin-order-status-text, .admin-member-rank, .admin-cashier-status, .admin-available, .admin-unavailable, .admin-menu-actions > button, .admin-cashier-actions button, .admin-product-actions button, .admin-order-detail-figma, .admin-member-detail, .admin-product-detail-section h3),
+.cashier-dashboard.cashier-dashboard.cashier-dashboard :is(.cashier-outline-button, .cashier-confirm-button, .cashier-shift-action, .cashier-save-button, .cashier-profile-action, .cashier-detail-button, .cashier-status-select, .cashier-status-buttons button, .cashier-date-range-filter),
+.bb-dashboard.bb-dashboard.bb-dashboard :is(.primary-button, .bb-profile-action, .bb-cart-button, .bb-order-filter, .bb-menu-tabs button, .bb-option-buttons button, .bb-detail-button, .bb-review-link, .bb-mark-read-button, .bb-status, .bb-choose-voucher, .bb-back-to-menu) {
+  font-size: var(--bb-type-control) !important;
+}
+
+/* The report price is inline body text, not a large KPI. */
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-report-kpis strong {
+  font-family: var(--bb-font-ui) !important;
+  font-size: var(--bb-type-body) !important;
+  font-weight: 600;
+}
+
+/* Actual metrics remain the only intentionally large text inside cards. */
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-figma-kpis article > strong,
+.cashier-dashboard.cashier-dashboard.cashier-dashboard .cashier-shift-summary strong,
+.bb-dashboard.bb-dashboard.bb-dashboard :is(.bb-membership-card h2, .bb-home-summary strong) {
+  font-family: var(--bb-font-display) !important;
+  font-size: var(--bb-type-metric) !important;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-modal-total {
+  font-size: 14px !important;
+}
+
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-modal-total strong,
+.bb-dashboard.bb-dashboard.bb-dashboard :is(.bb-summary-total strong, .bb-checkout-total strong),
+.cashier-dashboard.cashier-dashboard.cashier-dashboard .cashier-total-row strong {
+  font-size: 19px !important;
+}
+
+.bb-dashboard.bb-dashboard.bb-dashboard :is(.bb-summary-total, .bb-checkout-total),
+.cashier-dashboard.cashier-dashboard.cashier-dashboard .cashier-total-row {
+  font-size: 14px !important;
+}
+
+/* Restore only visual symbols after the broad text normalisation. */
+.admin-dashboard.admin-dashboard.admin-dashboard :is(.admin-kpi-icon, .admin-report-card-icon),
+.cashier-dashboard.cashier-dashboard.cashier-dashboard :is(.cashier-product-image, .cashier-modal-image),
+.bb-dashboard.bb-dashboard.bb-dashboard :is(.bb-voucher-icon, .bb-menu-modal-art, .bb-cart-item-art) {
+  font-family: var(--bb-font-display) !important;
+}
+
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-kpi-icon { font-size: 17px !important; }
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-report-card-icon { font-size: 14px !important; }
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-product-detail-thumbnail { font-size: 23px !important; }
+.cashier-dashboard.cashier-dashboard.cashier-dashboard .cashier-product-image { font-size: 26px !important; }
+.cashier-dashboard.cashier-dashboard.cashier-dashboard .cashier-modal-image { font-size: 45px !important; }
+.bb-dashboard.bb-dashboard.bb-dashboard .bb-voucher-icon { font-size: 17px !important; }
+.bb-dashboard.bb-dashboard.bb-dashboard .bb-menu-modal-art { font-size: 53px !important; }
+.bb-dashboard.bb-dashboard.bb-dashboard .bb-cart-item-art { font-size: 31px !important; }
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-notice-number,
+.cashier-dashboard.cashier-dashboard.cashier-dashboard .cashier-notice-number,
+.bb-dashboard.bb-dashboard.bb-dashboard .bb-notice-number { font-size: 19px !important; }
+.admin-dashboard.admin-dashboard.admin-dashboard :is(.admin-modal-close),
+.cashier-dashboard.cashier-dashboard.cashier-dashboard :is(.cashier-modal-close),
+.bb-dashboard.bb-dashboard.bb-dashboard :is(.bb-menu-close, .bb-voucher-close) { font-size: 23px !important; }
+.bb-dashboard.bb-dashboard.bb-dashboard .bb-cart-button b,
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-notice-count { font-size: var(--bb-type-caption) !important; }
+.cashier-dashboard.cashier-dashboard.cashier-dashboard .cashier-list-footer button,
+.admin-dashboard.admin-dashboard.admin-dashboard button[aria-label^='Trang'],
+.bb-dashboard.bb-dashboard.bb-dashboard button[aria-label^='Trang'] { font-size: 15px !important; }
+
+/* Guest, customer home, login, register and forgot-password use the same hierarchy. */
+.guest-page.guest-page.guest-page :is(p, span, li, a, time, em, i),
+.role-guest-home.role-guest-home.role-guest-home :is(p, span, li, a, time, em, i),
+.register-page.register-page.register-page :is(p, span, li, a, time, em, i) {
+  font-family: var(--bb-font-ui) !important;
+  font-size: var(--bb-type-body) !important;
+}
+
+.guest-page.guest-page.guest-page :is(strong, b),
+.role-guest-home.role-guest-home.role-guest-home :is(strong, b),
+.register-page.register-page.register-page :is(strong, b) {
+  font-family: var(--bb-font-ui) !important;
+  font-size: var(--bb-type-body) !important;
+  font-weight: 600;
+}
+
+.guest-page.guest-page.guest-page :is(small, label, button, input, select, textarea, option),
+.role-guest-home.role-guest-home.role-guest-home :is(small, label, button, input, select, textarea, option),
+.register-page.register-page.register-page :is(small, label, button, input, select, textarea, option) {
+  font-family: var(--bb-font-ui) !important;
+  font-size: var(--bb-type-control) !important;
+}
+
+.guest-page.guest-page.guest-page .guest-hero h1,
+.role-guest-home.role-guest-home.role-guest-home .guest-hero h1,
+.register-page.register-page.register-page .register-card h1 {
+  font-family: var(--bb-font-display) !important;
+  font-size: var(--bb-type-title) !important;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.guest-page.guest-page.guest-page .guest-menu-heading h2,
+.role-guest-home.role-guest-home.role-guest-home .guest-menu-heading h2 {
+  font-family: var(--bb-font-display) !important;
+  font-size: var(--bb-type-section-title) !important;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.guest-page.guest-page.guest-page .guest-product-modal h2,
+.register-page.register-page.register-page .forgot-success h2 {
+  font-family: var(--bb-font-display) !important;
+  font-size: var(--bb-type-modal-title) !important;
+  font-weight: 700;
+}
+
+.guest-page.guest-page.guest-page :is(.guest-eyebrow, .guest-hero-art small),
+.role-guest-home.role-guest-home.role-guest-home :is(.guest-eyebrow, .guest-hero-art small),
+.register-page.register-page.register-page .eyebrow {
+  font-size: var(--bb-type-caption) !important;
+  font-weight: 600;
+}
+
+.guest-page.guest-page.guest-page :is(.guest-brand, .guest-brand-mark),
+.role-guest-home.role-guest-home.role-guest-home :is(.guest-brand, .guest-brand-mark) {
+  font-family: var(--bb-font-display) !important;
+}
+
+.guest-page.guest-page.guest-page .guest-brand,
+.role-guest-home.role-guest-home.role-guest-home .guest-brand { font-size: 22px !important; }
+.guest-page.guest-page.guest-page .guest-brand-mark,
+.role-guest-home.role-guest-home.role-guest-home .guest-brand-mark { font-family: var(--bb-font-ui) !important; font-size: 13px !important; }
+.guest-page.guest-page.guest-page :is(.guest-cup, .guest-product-art > b),
+.role-guest-home.role-guest-home.role-guest-home :is(.guest-cup, .guest-product-art > b) { font-family: var(--bb-font-display) !important; }
+.guest-page.guest-page.guest-page .guest-cup { font-size: 24px !important; }
+.guest-page.guest-page.guest-page .guest-product-art > b { font-size: 37px !important; }
+
+@media (max-width: 720px) {
+  .guest-page.guest-page.guest-page .guest-brand,
+  .role-guest-home.role-guest-home.role-guest-home .guest-brand { font-size: 21px !important; }
+}
+
+/*
+ * Audit closure: these are real heading and identity elements which use
+ * button/link markup for interaction.  Re-apply their semantic scale after
+ * the generic control rule above so no page renders them as a smaller control
+ * or a legacy oversized heading.
+ */
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-content h1,
+.cashier-dashboard.cashier-dashboard.cashier-dashboard .cashier-content h1,
+.bb-dashboard.bb-dashboard.bb-dashboard .bb-content h1 {
+  font-family: var(--bb-font-display) !important;
+  font-size: var(--bb-type-title) !important;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-brand,
+.cashier-dashboard.cashier-dashboard.cashier-dashboard .cashier-brand,
+.bb-dashboard.bb-dashboard.bb-dashboard .bb-brand,
+.register-page.register-page.register-page .auth-brand {
+  font-family: var(--bb-font-display) !important;
+  font-size: 22px !important;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-brand > span,
+.cashier-dashboard.cashier-dashboard.cashier-dashboard .cashier-brand > span,
+.bb-dashboard.bb-dashboard.bb-dashboard .bb-brand > span,
+.register-page.register-page.register-page .auth-brand > span {
+  font-family: var(--bb-font-ui) !important;
+  font-size: 13px !important;
+  font-weight: 600;
+}
+
+.admin-dashboard.admin-dashboard.admin-dashboard .admin-nav-item,
+.cashier-dashboard.cashier-dashboard.cashier-dashboard .cashier-nav-item,
+.bb-dashboard.bb-dashboard.bb-dashboard .bb-nav-item {
+  font-size: var(--bb-type-body) !important;
+}
+
+/* Guest menu still uses the legacy product-modal class, not guest-product-modal. */
+.guest-page.guest-page.guest-page .product-modal h2 {
+  font-family: var(--bb-font-display) !important;
+  font-size: var(--bb-type-modal-title) !important;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.guest-page.guest-page.guest-page .product-modal .close-button {
+  font-size: 23px !important;
+}
+/* New screens use the same warm palette and scale as the audited prototype. */
+.brew-loading,.brew-access-denied{padding:10vh 24px;text-align:center;color:#50382c;background:#fcf8f3;min-height:100vh}
+.brew-loading{display:grid;place-items:center;font-size:1rem}
+.brew-runtime{position:fixed;bottom:18px;right:20px;z-index:2000;padding:12px 18px;border:1px solid #d6c1af;background:#fff8ec;color:#50382c;border-radius:8px;box-shadow:0 8px 30px #50382c1a;display:flex;align-items:center;gap:12px;max-width:min(600px,92vw);font-size:14px}
+.brew-runtime.error{background:#fff1ec;border-color:#c46a50}.brew-runtime button{border:0;background:none;color:inherit;cursor:pointer}
+.brew-demo-access{max-width:650px;margin:0 auto 24px;border:1px solid #dfcfc3;border-radius:12px;padding:16px 20px;background:#fffaf4;color:#50382c;text-align:left}.brew-demo-access p{margin:6px 0;font-size:14px;overflow-wrap:anywhere}.brew-demo-access small{font-size:12px}
+.brew-work-content{padding:28px!important}.brew-toolbar{display:flex;gap:12px;margin-bottom:18px}.brew-toolbar input{flex:1;min-width:0}.brew-toolbar input,.brew-toolbar select,.brew-form input,.brew-form select,.brew-form textarea,.brew-modal select,.brew-modal textarea{font:inherit;padding:11px 12px;border:1px solid #ddcdbf;border-radius:6px;background:#fff;color:#50382c}.brew-card{background:#fff;border:1px solid #eadfd5;border-radius:10px;padding:22px;color:#50382c}.brew-table-wrap{padding:0;overflow-x:auto}.brew-table{width:100%;border-collapse:collapse;font-size:14px}.brew-table th,.brew-table td{padding:16px 14px;text-align:left;border-bottom:1px solid #f0e6dc;white-space:nowrap}.brew-table th{font-weight:600;background:#faf5ee}.brew-table td:last-child{text-align:center}.brew-table tr:last-child td{border-bottom:0}.brew-button{font:inherit;font-size:14px;display:inline-flex;justify-content:center;align-items:center;padding:10px 16px;background:#6c4d3a;color:white;border:1px solid #6c4d3a;border-radius:6px;cursor:pointer;text-decoration:none}.brew-button.secondary{background:white;color:#6c4d3a;border-color:#d8c5b5}.brew-button:disabled{opacity:.5;cursor:not-allowed}.brew-empty{padding:42px 22px;text-align:center;color:#806858}.brew-empty h2{font-size:20px}.brew-hint{font-size:14px!important;color:#806858;line-height:1.5}.brew-overlay{position:fixed;inset:0;background:#2d1e1766;display:flex;align-items:center;justify-content:center;padding:20px;z-index:1500}.brew-modal{width:min(600px,100%);max-height:85vh;overflow:auto;background:#fffaf5;border-radius:12px;padding:24px;color:#50382c}.brew-modal-heading{display:flex;justify-content:space-between;align-items:center;gap:16px}.brew-modal-heading button{font-size:24px;background:transparent;border:none;cursor:pointer}.brew-form,.brew-modal label{display:grid;gap:18px}.brew-form label,.brew-modal label{display:grid;gap:8px;font-size:14px;font-weight:500;margin-bottom:18px}.brew-modal textarea{resize:vertical;min-height:100px}.brew-details{display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:14px}.brew-details dd{margin:0;text-align:right;font-weight:600}.brew-split{display:grid;grid-template-columns:minmax(280px,1fr) minmax(320px,1.25fr);gap:24px}.brew-card h2{font-size:22px;margin-top:0}.brew-request{padding:18px 0;border-top:1px solid #eadfd5}.brew-request>span{float:right;font-size:14px}.brew-request small{color:#806858;font-size:12px}.brew-response{background:#f7f0e6;border-left:3px solid #b29175;padding:12px 16px;margin-top:14px}.brew-response p{margin-bottom:0}.brew-prewrap{white-space:pre-wrap;overflow-wrap:anywhere}.brew-public-notices{max-width:960px;margin:auto;padding:35px 24px;color:#50382c}.brew-public-notices h1{font-family:'Playfair Display',Georgia,serif;font-size:36px;margin-top:40px}.brew-public-notices article{margin:20px 0}.brew-composer{margin-bottom:20px}.brew-composer form{margin-top:16px}
+.admin-sidebar,.bb-sidebar{overflow-y:auto}.admin-nav{flex:1;min-height:0;overflow-y:auto}.admin-nav-item{min-height:38px!important;margin-bottom:2px!important}.admin-profile{flex-shrink:0}.admin-nav-item span{font-size:16px}
+@media(max-width:900px){.brew-split{grid-template-columns:1fr}.brew-work-content{padding:20px!important}.brew-toolbar{flex-wrap:wrap}.brew-modal{padding:18px}.brew-demo-access{margin:0 12px 24px}.brew-demo-access p{font-size:13px}}
+@media(max-width:650px){.admin-dashboard,.bb-dashboard{display:block!important}.admin-sidebar,.bb-sidebar{position:relative!important;width:100%!important;height:auto!important;padding:16px!important}.admin-nav,.bb-sidebar-nav{display:flex;overflow-x:auto;gap:6px;flex-wrap:nowrap}.admin-nav-item,.bb-nav-item{flex:0 0 auto;width:auto!important;white-space:nowrap;padding:10px 12px!important}.admin-profile,.bb-sidebar-profile,.admin-sidebar-label,.bb-sidebar-label{display:none!important}.admin-main,.bb-main{margin-left:0!important;min-width:0;width:100%!important}.admin-topbar,.bb-topbar{padding:18px!important;min-height:72px;height:auto!important;flex-wrap:wrap;gap:12px}.brew-table th,.brew-table td{padding:12px;font-size:14px}.brew-toolbar input{min-width:100%}.brew-runtime{bottom:12px;right:12px}.brew-details{font-size:14px}.admin-content,.bb-content{padding:18px!important}}
+.guest-photo-art{padding:0!important;overflow:hidden;border-radius:12px;background:#e4cfb5!important}.guest-photo-art img{width:100%;height:100%;object-fit:cover;display:block}.brew-payment-sim{display:flex!important;align-items:center;gap:8px!important;margin:12px 0;font-size:14px;font-weight:400}.brew-payment-sim input{width:auto!important;margin:0!important}
+.brew-invoice{border:1px solid #dfcfc3;border-radius:10px;width:min(430px,90vw);max-height:90vh;padding:26px;color:#50382c}.brew-invoice::backdrop{background:#2d1e1777}.brew-invoice h1{font-family:'Playfair Display',Georgia,serif;text-align:center;font-size:28px}.brew-invoice-line{display:flex;justify-content:space-between;gap:14px;margin:14px 0;font-size:14px}.brew-invoice-line small{display:block;font-size:12px;color:#806858;margin-top:5px}.brew-invoice-tools{display:flex;justify-content:space-between}.brew-invoice hr{border:0;border-top:1px dashed #c4ae9a}
+@media print{body *{visibility:hidden!important}.brew-invoice,.brew-invoice *{visibility:visible!important}.brew-invoice{position:fixed;inset:0;margin:0;width:100%;max-height:none;border:0;overflow:visible;color:#000}.brew-invoice-tools,.brew-invoice-tools *{display:none!important}}
+dialog.brew-modal{border:1px solid #dfcfc3;margin:auto}dialog.brew-modal::backdrop{background:#2d1e1766}
+
+/* Payment confirmation and cash reconciliation use the existing brand tokens. */
+.brew-demo-qr{display:grid;justify-items:center;gap:8px;margin:16px auto;color:#765747}
+.brew-demo-qr svg{width:150px;height:150px;border:1px solid #eadfd5;border-radius:12px;padding:8px;background:#fff}
+.brew-cash-summary{margin:16px 0;background:#fffaf4;color:#50382c}
+.brew-cash-summary h2{font-family:'Playfair Display',serif}
+.brew-modal .brew-toolbar{flex-wrap:wrap;margin-top:18px}
+.bb-review-card select{display:block;width:100%;margin:8px 0 16px;padding:12px;border:1px solid #dfcfc3;border-radius:10px;background:#fff;color:#50382c;font:inherit}
+.brew-loyalty-report{margin:18px 0;color:#50382c;background:#fffaf4}
+.brew-loyalty-report h2{font-family:'Playfair Display',serif}

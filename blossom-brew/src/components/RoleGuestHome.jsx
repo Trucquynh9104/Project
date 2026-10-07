@@ -61,20 +61,22 @@ function RoleGuestHome({ role }) {
   const navigate = useNavigate()
   const [activeCategory, setActiveCategory] = useState('Tất cả')
   const [keyword, setKeyword] = useState('')
-  const [products] = useState(() => getProducts().filter((product) => product.available))
+  const [products] = useState(getProducts)
   const content = roleContent[role] || roleContent.customer
 
   const filteredProducts = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLowerCase()
 
-    return products.filter((product) => {
-      const matchesCategory =
-        activeCategory === 'Tất cả' ||
-        product.category === activeCategory ||
-        (activeCategory === 'Khác' && product.category === 'Đá xay')
-      const matchesKeyword = !normalizedKeyword || product.name.toLowerCase().includes(normalizedKeyword)
-      return matchesCategory && matchesKeyword
-    })
+    return products
+      .filter((product) => {
+        const matchesCategory =
+          activeCategory === 'Tất cả' ||
+          product.category === activeCategory ||
+          (activeCategory === 'Khác' && product.category === 'Đá xay')
+        const matchesKeyword = !normalizedKeyword || product.name.toLowerCase().includes(normalizedKeyword)
+        return product.available !== false && matchesCategory && matchesKeyword
+      })
+      .sort((first, second) => Number(first.available === false) - Number(second.available === false))
   }, [activeCategory, keyword, products])
 
   return (
@@ -95,15 +97,7 @@ function RoleGuestHome({ role }) {
           </div>
         </div>
 
-        <div aria-hidden="true" className="guest-hero-art">
-          <span className="guest-hero-ring" />
-          <span className="guest-steam steam-one" />
-          <span className="guest-steam steam-two" />
-          <span className="guest-steam steam-three" />
-          <span className="guest-saucer" />
-          <span className="guest-cup"><span>B</span><i /></span>
-          <small>BLEND<br />2026</small>
-        </div>
+        <div className="guest-hero-art guest-photo-art"><img src="/coffee-hero.webp" alt="Tách cà phê latte trong ánh nắng buổi sáng" width="1448" height="1086" /></div>
       </section>
 
       <section className="guest-menu-section" id={`role-menu-${role}`}>
@@ -139,7 +133,7 @@ function RoleGuestHome({ role }) {
 
         <div className="guest-product-grid">
           {filteredProducts.map((product, index) => (
-            <button className="guest-product-card" key={product.id} type="button" onClick={() => navigate(content.productPath)}>
+            <button className={product.available ? 'guest-product-card' : 'guest-product-card is-unavailable'} disabled={!product.available} key={product.id} type="button" onClick={() => navigate(content.productPath)}>
               <span className={`guest-product-art tone-${(index % 3) + 1}`}>
                 <b>{String(index + 1).padStart(2, '0')}</b>
                 <i className="guest-card-ring" />
@@ -151,6 +145,7 @@ function RoleGuestHome({ role }) {
                 <strong>{product.name}</strong>
                 <span>{getProductDescription(product)}</span>
                 <b>{formatPrice(product.price)}</b>
+                {!product.available && <em className="guest-product-unavailable">Không khả dụng</em>}
               </span>
             </button>
           ))}

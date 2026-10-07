@@ -1,86 +1,143 @@
-import { useMemo, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { useLiveData } from "../../services/useLiveData";
+import { store } from "../../services/dataStore";
+import { useMemo, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import {
   addLoyaltyMember,
   getCurrentUser,
   getLoyaltyMembers,
   logoutUser,
   updateMemberPoints,
-} from '../../services/authService'
-import { notifyMemberPointsAdjusted } from '../../services/notificationService'
+} from "../../services/authService";
+import { notifyMemberPointsAdjusted } from "../../services/notificationService";
 
-const MEMBERS_PER_PAGE = 8
+const MEMBERS_PER_PAGE = 8;
 
-function ListFooter({ currentPage, itemLabel, onPageChange, totalItems, totalPages }) {
-  const buttonStyle = { background: '#fff', border: '1px solid #dfcfc3', color: '#765747', height: '32px', width: '32px' }
+function ListFooter({
+  currentPage,
+  itemLabel,
+  onPageChange,
+  totalItems,
+  totalPages,
+}) {
+  const buttonStyle = {
+    background: "#fff",
+    border: "1px solid #dfcfc3",
+    color: "#765747",
+    height: "26px",
+    width: "26px",
+    fontSize: "14px",
+  };
   return (
-    <div style={{ alignItems: 'center', borderTop: '1px solid #eadfd5', display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', minHeight: '58px', padding: '0 18px' }}>
-      <span style={{ color: '#806858', fontSize: '13px' }}>Tổng số {itemLabel}: <strong style={{ color: '#50382c' }}>{totalItems}</strong></span>
-      <div style={{ alignItems: 'center', display: 'flex', gap: '8px' }}>
-        <button aria-label="Trang trước" disabled={currentPage === 1} onClick={() => onPageChange(Math.max(1, currentPage - 1))} style={{ ...buttonStyle, cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }} type="button">{'<'}</button>
-        <span style={{ color: '#806858', fontSize: '13px' }}>Trang {currentPage} / {totalPages}</span>
-        <button aria-label="Trang sau" disabled={currentPage === totalPages} onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} style={{ ...buttonStyle, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }} type="button">{'>'}</button>
+    <div
+      style={{
+        alignItems: "center",
+        borderTop: "1px solid #eadfd5",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "8px",
+        justifyContent: "space-between",
+        minHeight: "42px",
+        padding: "0 12px",
+      }}
+    >
+      <span style={{ color: "#806858", fontSize: "11px" }}>
+        Tổng số {itemLabel}:{" "}
+        <strong style={{ color: "#50382c" }}>{totalItems}</strong>
+      </span>
+      <div style={{ alignItems: "center", display: "flex", gap: "6px" }}>
+        <button
+          aria-label="Trang trước"
+          disabled={currentPage === 1}
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          style={{
+            ...buttonStyle,
+            cursor: currentPage === 1 ? "not-allowed" : "pointer",
+            opacity: currentPage === 1 ? 0.4 : 1,
+          }}
+          type="button"
+        >
+          {"<"}
+        </button>
+        <span style={{ color: "#806858", fontSize: "11px" }}>
+          Trang {currentPage} / {totalPages}
+        </span>
+        <button
+          aria-label="Trang sau"
+          disabled={currentPage === totalPages}
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          style={{
+            ...buttonStyle,
+            cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+            opacity: currentPage === totalPages ? 0.4 : 1,
+          }}
+          type="button"
+        >
+          {">"}
+        </button>
       </div>
     </div>
-  )
+  );
 }
 
 function getOrders() {
   try {
-    return JSON.parse(localStorage.getItem('blossom-orders') || '[]')
+    return JSON.parse(store.getItem("blossom-orders") || "[]");
   } catch {
-    return []
+    return [];
   }
 }
 
 function getRank(points) {
-  const totalPoints = Number(points || 0)
+  const totalPoints = Number(points || 0);
 
-  if (totalPoints > 100) return 'Gold'
-  if (totalPoints >= 50) return 'Silver'
-  return 'Member'
+  if (totalPoints > 100) return "Gold";
+  if (totalPoints >= 50) return "Silver";
+  return "Member";
 }
 
 function getMemberCode(member) {
-  return `MB-${String(member.id || '').slice(-6).toUpperCase()}`
+  return `MB-${String(member.id || "")
+    .slice(-6)
+    .toUpperCase()}`;
 }
 
 function formatDate(value) {
-  if (!value) return '—'
+  if (!value) return "—";
 
-  const date = new Date(value)
+  const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) return String(value)
+  if (Number.isNaN(date.getTime())) return String(value);
 
-  return new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(date)
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
 }
 
 function getEmptyMemberForm() {
   return {
-    name: '',
-    phone: '',
-  }
+    name: "",
+    phone: "",
+  };
 }
 
 function AdminMembersPage() {
-  const navigate = useNavigate()
-  const user = getCurrentUser()
-  const [members, setMembers] = useState(() => getLoyaltyMembers())
-  const [keyword, setKeyword] = useState('')
-  const [typeFilter, setTypeFilter] = useState('all')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [selectedMember, setSelectedMember] = useState(null)
-  const [pointsInput, setPointsInput] = useState('')
-  const [message, setMessage] = useState('')
-  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
-  const [memberForm, setMemberForm] = useState(getEmptyMemberForm)
-  const [addMemberMessage, setAddMemberMessage] = useState('')
+  const navigate = useNavigate();
+  const user = getCurrentUser();
+  const [members, setMembers] = useLiveData(getLoyaltyMembers);
+  const [keyword, setKeyword] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [pointsInput, setPointsInput] = useState("");
+  const [message, setMessage] = useState("");
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  const [memberForm, setMemberForm] = useState(getEmptyMemberForm);
+  const [addMemberMessage, setAddMemberMessage] = useState("");
 
-  const orders = useMemo(getOrders, [])
+  const orders = useLiveData(getOrders)[0];
 
   const memberRows = useMemo(
     () =>
@@ -89,10 +146,10 @@ function AdminMembersPage() {
           (order) =>
             order.member?.id === member.id ||
             (!order.member?.id && order.member?.phone === member.phone),
-        )
+        );
         const completedOrders = memberOrders.filter(
-          (order) => order.status === 'Hoàn tất',
-        )
+          (order) => order.status === "Hoàn tất",
+        );
 
         return {
           ...member,
@@ -102,127 +159,133 @@ function AdminMembersPage() {
             (sum, order) => sum + Number(order.total || 0),
             0,
           ),
-        }
+        };
       }),
     [members, orders],
-  )
+  );
 
   const filteredMembers = useMemo(() => {
-    const normalizedKeyword = keyword.trim().toLowerCase()
+    const normalizedKeyword = keyword.trim().toLowerCase();
 
     return memberRows.filter((member) => {
       const matchedKeyword =
         !normalizedKeyword ||
         [member.name, member.phone, member.email, getMemberCode(member)]
           .filter(Boolean)
-          .join(' ')
+          .join(" ")
           .toLowerCase()
-          .includes(normalizedKeyword)
+          .includes(normalizedKeyword);
       const matchedType =
-        typeFilter === 'all' || member.memberType === typeFilter
+        typeFilter === "all" || member.memberType === typeFilter;
 
-      return matchedKeyword && matchedType
-    })
-  }, [keyword, memberRows, typeFilter])
+      return matchedKeyword && matchedType;
+    });
+  }, [keyword, memberRows, typeFilter]);
 
   const totalPages = Math.max(
     1,
     Math.ceil(filteredMembers.length / MEMBERS_PER_PAGE),
-  )
-  const activePage = Math.min(currentPage, totalPages)
+  );
+  const activePage = Math.min(currentPage, totalPages);
   const paginatedMembers = filteredMembers.slice(
     (activePage - 1) * MEMBERS_PER_PAGE,
     activePage * MEMBERS_PER_PAGE,
-  )
+  );
 
-  if (!user || user.role !== 'admin') {
-    return <Navigate to="/login" replace />
+  if (!user || user.role !== "admin") {
+    return <Navigate to="/login" replace />;
   }
 
   const initials = user.name
-    .split(' ')
+    .split(" ")
     .map((part) => part[0])
     .slice(-2)
-    .join('')
-    .toUpperCase()
+    .join("")
+    .toUpperCase();
 
   const navItems = [
-    { icon: '⌂', label: 'Tổng quan', to: '/admin' },
-    { icon: '⌁', label: 'Quản lý menu', to: '/admin/products' },
-    { icon: '□', label: 'Đơn hàng', to: '/admin/orders' },
-    { icon: '◦', label: 'Thành viên', to: '/admin/members', active: true },
-    { icon: '◇', label: 'Voucher', to: '/admin/vouchers' },
-    { icon: '♙', label: 'Tài khoản thu ngân', to: '/admin/cashiers' },
-    { icon: '↗', label: 'Báo cáo', to: '/admin/reports' },
-    { icon: '✦', label: 'Thông báo', to: '/admin/notices' },
-    { icon: '○', label: 'Thông tin cá nhân', to: '/admin/profile' },
-  ]
+    { icon: "⌂", label: "Tổng quan", to: "/admin" },
+    { icon: "⌁", label: "Quản lý menu", to: "/admin/products" },
+    { icon: "□", label: "Đơn hàng", to: "/admin/orders" },
+    { icon: "◦", label: "Thành viên", to: "/admin/members", active: true },
+    { icon: "◇", label: "Voucher", to: "/admin/vouchers" },
+    { icon: "♙", label: "Tài khoản thu ngân", to: "/admin/cashiers" },
+    { icon: "◷", label: "Ca làm việc", to: "/admin/shifts" },
+    { icon: "☆", label: "Đánh giá", to: "/admin/feedback" },
+    { icon: "?", label: "Yêu cầu hỗ trợ", to: "/admin/support" },
+    { icon: "↗", label: "Báo cáo", to: "/admin/reports" },
+    { icon: "✦", label: "Thông báo", to: "/admin/notices" },
+    { icon: "○", label: "Thông tin cá nhân", to: "/admin/profile" },
+  ];
 
-  function handleLogout() {
-    logoutUser()
-    navigate('/')
+  async function handleLogout() {
+    await logoutUser();
+    navigate("/");
   }
 
   function openMember(member) {
-    setSelectedMember(member)
-    setPointsInput(String(member.points || 0))
-    setMessage('')
+    setSelectedMember(member);
+    setPointsInput(String(member.points || 0));
+    setMessage("");
   }
 
   function closeMember() {
-    setSelectedMember(null)
-    setMessage('')
+    setSelectedMember(null);
+    setMessage("");
   }
 
-  function savePoints() {
-    const result = updateMemberPoints({
+  async function savePoints() {
+    if (!window.confirm("Xác nhận lưu số điểm thành viên?")) return;
+    const result = await updateMemberPoints({
       id: selectedMember.id,
       memberType: selectedMember.memberType,
       points: pointsInput,
-    })
+    });
 
     if (!result.ok) {
-      setMessage('Không thể cập nhật điểm thành viên.')
-      return
+      setMessage("Không thể cập nhật điểm thành viên.");
+      return;
     }
 
-    notifyMemberPointsAdjusted({ member: selectedMember, points: pointsInput })
-    setMembers(getLoyaltyMembers())
-    closeMember()
+    notifyMemberPointsAdjusted({ member: selectedMember, points: pointsInput });
+    setMembers(getLoyaltyMembers());
+    closeMember();
   }
 
   function openAddMember() {
-    setMemberForm(getEmptyMemberForm())
-    setAddMemberMessage('')
-    setIsAddMemberOpen(true)
+    setMemberForm(getEmptyMemberForm());
+    setAddMemberMessage("");
+    setIsAddMemberOpen(true);
   }
 
   function closeAddMember() {
-    setIsAddMemberOpen(false)
-    setMemberForm(getEmptyMemberForm())
-    setAddMemberMessage('')
+    setIsAddMemberOpen(false);
+    setMemberForm(getEmptyMemberForm());
+    setAddMemberMessage("");
   }
 
   function handleMemberFormChange(event) {
-    const { name, value } = event.target
+    const { name, value } = event.target;
 
-    setMemberForm((current) => ({ ...current, [name]: value }))
-    setAddMemberMessage('')
+    setMemberForm((current) => ({ ...current, [name]: value }));
+    setAddMemberMessage("");
   }
 
-  function handleAddMember(event) {
-    event.preventDefault()
+  async function handleAddMember(event) {
+    event.preventDefault();
 
-    const result = addLoyaltyMember(memberForm)
+    if (!window.confirm("Xác nhận thêm thành viên mới?")) return;
+
+    const result = await addLoyaltyMember(memberForm);
 
     if (!result.ok) {
-      setAddMemberMessage(result.message || 'Không thể thêm thành viên.')
-      return
+      setAddMemberMessage(result.message || "Không thể thêm thành viên.");
+      return;
     }
 
-    setMembers(getLoyaltyMembers())
-    setCurrentPage(1)
-    closeAddMember()
+    setMembers(getLoyaltyMembers());
+    setCurrentPage(1);
+    closeAddMember();
   }
 
   return (
@@ -231,7 +294,7 @@ function AdminMembersPage() {
         <button
           className="admin-brand"
           type="button"
-          onClick={() => navigate('/admin/home')}
+          onClick={() => navigate("/admin")}
         >
           <span>B</span>
           Blossom Brew
@@ -243,7 +306,7 @@ function AdminMembersPage() {
           {navItems.map((item) => (
             <button
               className={
-                item.active ? 'admin-nav-item active' : 'admin-nav-item'
+                item.active ? "admin-nav-item active" : "admin-nav-item"
               }
               key={item.label}
               type="button"
@@ -269,18 +332,45 @@ function AdminMembersPage() {
 
       <main className="admin-main">
         <header className="admin-topbar">
-          <span>THÀNH VIÊN</span>
+          <div className="admin-page-title">
+            <h1>Thành viên.</h1>
+            <p>
+              Theo dõi hành trình, điểm tích lũy và hạng thành viên của khách
+              hàng.
+            </p>
+          </div>
+          <span>
+            {new Intl.DateTimeFormat("vi-VN", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            }).format(new Date())}
+          </span>
         </header>
 
         <section className="admin-content">
-          <div className="admin-members-heading">
-            <div>
-              <p className="admin-eyebrow">Customer relationship</p>
-              <h1>Thành viên.</h1>
-              <p>Tra cứu lịch sử mua hàng và quản lý điểm thành viên.</p>
-            </div>
+          <div className="admin-members-toolbar">
+            <input
+              value={keyword}
+              onChange={(event) => {
+                setKeyword(event.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Tìm mã thành viên, tên, số điện thoại..."
+            />
 
-            <div className="admin-members-heading-actions">
+            <div className="admin-members-toolbar-actions">
+              <select
+                value={typeFilter}
+                onChange={(event) => {
+                  setTypeFilter(event.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                <option value="all">Tất cả thành viên</option>
+                <option value="account">Có tài khoản</option>
+                <option value="loyalty">Tích điểm tại quầy</option>
+              </select>
               <button
                 className="admin-primary-button"
                 type="button"
@@ -289,29 +379,6 @@ function AdminMembersPage() {
                 ＋ Thêm thành viên
               </button>
             </div>
-          </div>
-
-          <div className="admin-members-toolbar">
-            <input
-              value={keyword}
-              onChange={(event) => {
-                setKeyword(event.target.value)
-                setCurrentPage(1)
-              }}
-              placeholder="Tìm mã thành viên, tên, số điện thoại..."
-            />
-
-            <select
-              value={typeFilter}
-              onChange={(event) => {
-                setTypeFilter(event.target.value)
-                setCurrentPage(1)
-              }}
-            >
-              <option value="all">Tất cả thành viên</option>
-              <option value="account">Có tài khoản</option>
-              <option value="loyalty">Tích điểm tại quầy</option>
-            </select>
           </div>
 
           <section className="admin-members-table-figma">
@@ -333,14 +400,18 @@ function AdminMembersPage() {
 
                 <span className="admin-member-cell">
                   <strong>{member.phone}</strong>
-                  <small>{member.email || 'Tích điểm tại quầy'}</small>
+                  <small>{member.email || "Tích điểm tại quầy"}</small>
                 </span>
 
-                <span className={`admin-member-rank ${getRank(member.points).toLowerCase()}`}>
+                <span
+                  className={`admin-member-rank ${getRank(member.points).toLowerCase()}`}
+                >
                   {getRank(member.points)}
                 </span>
 
-                <strong>{Number(member.points || 0).toLocaleString('vi-VN')} điểm</strong>
+                <strong>
+                  {Number(member.points || 0).toLocaleString("vi-VN")} điểm
+                </strong>
                 <span>{member.orderCount} đơn</span>
 
                 <button
@@ -356,7 +427,13 @@ function AdminMembersPage() {
             {!filteredMembers.length && (
               <p className="admin-empty">Không tìm thấy thành viên phù hợp.</p>
             )}
-            <ListFooter currentPage={activePage} itemLabel="thành viên" onPageChange={setCurrentPage} totalItems={memberRows.length} totalPages={totalPages} />
+            <ListFooter
+              currentPage={activePage}
+              itemLabel="thành viên"
+              onPageChange={setCurrentPage}
+              totalItems={memberRows.length}
+              totalPages={totalPages}
+            />
           </section>
         </section>
       </main>
@@ -378,14 +455,27 @@ function AdminMembersPage() {
             <p className="admin-eyebrow">Member profile</p>
             <h2>{selectedMember.name}</h2>
             <p className="admin-member-modal-code">
-              {getMemberCode(selectedMember)} · {getRank(selectedMember.points)} member
+              {getMemberCode(selectedMember)} · {getRank(selectedMember.points)}{" "}
+              member
             </p>
 
             <div className="admin-member-profile-grid">
-              <p><span>Số điện thoại</span><strong>{selectedMember.phone}</strong></p>
-              <p><span>Email</span><strong>{selectedMember.email || 'Chưa có tài khoản'}</strong></p>
-              <p><span>Đơn đã hoàn tất</span><strong>{selectedMember.completedOrderCount} đơn</strong></p>
-              <p><span>Ngày tham gia</span><strong>{formatDate(selectedMember.createdAt)}</strong></p>
+              <p>
+                <span>Số điện thoại</span>
+                <strong>{selectedMember.phone}</strong>
+              </p>
+              <p>
+                <span>Email</span>
+                <strong>{selectedMember.email || "Chưa có tài khoản"}</strong>
+              </p>
+              <p>
+                <span>Đơn đã hoàn tất</span>
+                <strong>{selectedMember.completedOrderCount} đơn</strong>
+              </p>
+              <p>
+                <span>Ngày tham gia</span>
+                <strong>{formatDate(selectedMember.createdAt)}</strong>
+              </p>
             </div>
 
             <label className="admin-member-points-input">
@@ -398,11 +488,23 @@ function AdminMembersPage() {
               />
             </label>
 
-            {message && <p className="admin-form-message">{message}</p>}
+            {message && <p className="admin-form-message error">{message}</p>}
 
             <div className="admin-member-modal-actions">
-              <button className="admin-cancel-button" type="button" onClick={closeMember}>Hủy</button>
-              <button className="admin-primary-button" type="button" onClick={savePoints}>Lưu điểm</button>
+              <button
+                className="admin-cancel-button"
+                type="button"
+                onClick={closeMember}
+              >
+                Hủy
+              </button>
+              <button
+                className="admin-primary-button"
+                type="button"
+                onClick={savePoints}
+              >
+                Lưu điểm
+              </button>
             </div>
           </section>
         </div>
@@ -428,7 +530,11 @@ function AdminMembersPage() {
               Tạo hồ sơ tích điểm tại quầy. Thành viên mới sẽ có 0 điểm.
             </p>
 
-            <form className="admin-add-member-form" onSubmit={handleAddMember} noValidate>
+            <form
+              className="admin-add-member-form"
+              onSubmit={handleAddMember}
+              noValidate
+            >
               <label>
                 HỌ VÀ TÊN
                 <input
@@ -452,7 +558,7 @@ function AdminMembersPage() {
               </label>
 
               {addMemberMessage && (
-                <p className="admin-form-message">{addMemberMessage}</p>
+                <p className="admin-form-message error">{addMemberMessage}</p>
               )}
 
               <div className="admin-member-modal-actions">
@@ -472,7 +578,7 @@ function AdminMembersPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default AdminMembersPage
+export default AdminMembersPage;

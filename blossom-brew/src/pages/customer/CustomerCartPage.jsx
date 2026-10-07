@@ -1,212 +1,97 @@
-import { useMemo, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { applyVoucher } from "../../services/voucherService";
+import { store } from "../../services/dataStore";
+import { useMemo, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import {
   getCurrentUser,
   getMembershipLabel,
   getPersonalVouchers,
   logoutUser,
   SILVER_MIN_POINTS,
-} from '../../services/authService'
-import NotificationDropdown from '../../components/NotificationDropdown'
-import CustomerAvatar from '../../components/CustomerAvatar'
+} from "../../services/authService";
+import NotificationDropdown from "../../components/NotificationDropdown";
+import CustomerAvatar from "../../components/CustomerAvatar";
 
 const navigationItems = [
-  { icon: '⌂', label: 'Tổng quan', to: '/customer' },
-  { icon: '⌁', label: 'Menu & đặt món', to: '/customer/menu' },
-  { icon: '□', label: 'Giỏ hàng', to: '/customer/cart', active: true },
-  { icon: '◇', label: 'Điểm & voucher', to: '/customer/points' },
-  { icon: '◷', label: 'Lịch sử đơn hàng', to: '/customer/history' },
-  { icon: '✦', label: 'Thông báo', to: '/customer/notices' },
-  { icon: '☷', label: 'Thông tin cá nhân', to: '/customer/profile' },
-]
+  { icon: "⌂", label: "Tổng quan", to: "/customer" },
+  { icon: "⌁", label: "Menu & đặt món", to: "/customer/menu" },
+  { icon: "□", label: "Giỏ hàng", to: "/customer/cart", active: true },
+  { icon: "◇", label: "Điểm & voucher", to: "/customer/points" },
+  { icon: "◷", label: "Lịch sử đơn hàng", to: "/customer/history" },
+  { icon: "✦", label: "Thông báo", to: "/customer/notices" },
+  { icon: "?", label: "Hỗ trợ", to: "/customer/support" },
+  { icon: "☷", label: "Thông tin cá nhân", to: "/customer/profile" },
+];
 
 function getCart() {
   try {
-    return JSON.parse(localStorage.getItem('blossom-cart') || '[]')
+    return JSON.parse(store.getItem("blossom-cart") || "[]");
   } catch {
-    return []
+    return [];
   }
 }
 
 function formatPrice(price) {
-  return `${Number(price || 0).toLocaleString('vi-VN')}đ`
-}
-
-function getAdminVouchers() {
-  const defaults = [
-    {
-      code: 'BBSILVER',
-      type: 'percent',
-      value: 20,
-      minOrder: 80000,
-      maxDiscount: 30000,
-      active: true,
-      requiresSilver: true,
-    },
-    {
-      code: 'WELCOME25',
-      type: 'fixed',
-      value: 25000,
-      minOrder: 60000,
-      maxDiscount: 0,
-      active: true,
-      requiresSilver: false,
-    },
-  ]
-
-  try {
-    const savedVouchers = localStorage.getItem('blossom-vouchers')
-    return savedVouchers ? JSON.parse(savedVouchers) : defaults
-  } catch {
-    return defaults
-  }
-}
-
-function isExpired(expiry) {
-  return Boolean(expiry && new Date(`${expiry}T23:59:59`) < new Date())
+  return `${Number(price || 0).toLocaleString("vi-VN")}đ`;
 }
 
 function getVoucherResult({ voucherCode, user, subtotal }) {
-  if (!voucherCode) {
-    return { discount: 0, message: '', isValid: false }
-  }
-
-  const personalVoucher = getPersonalVouchers(user.id).find(
-    (voucher) => voucher.code === voucherCode,
-  )
-
-  if (personalVoucher) {
-    const minOrder = Number(personalVoucher.minOrder || 0)
-
-    if (subtotal < minOrder) {
-      return {
-        discount: 0,
-        message: `Voucher áp dụng cho đơn từ ${formatPrice(minOrder)}.`,
-        isValid: false,
-      }
-    }
-
-    return {
-      discount: Math.min(Number(personalVoucher.discount || 0), subtotal),
-      message: `Đã áp dụng voucher ${personalVoucher.code}.`,
-      isValid: true,
-    }
-  }
-
-  const adminVoucher = getAdminVouchers().find(
-    (voucher) => voucher.code === voucherCode,
-  )
-
-  if (!adminVoucher) {
-    return {
-      discount: 0,
-      message: 'Voucher không hợp lệ hoặc đã được sử dụng.',
-      isValid: false,
-    }
-  }
-
-  if (!adminVoucher.active) {
-    return {
-      discount: 0,
-      message: 'Voucher này hiện đã được tắt.',
-      isValid: false,
-    }
-  }
-
-  if (isExpired(adminVoucher.expiry)) {
-    return {
-      discount: 0,
-      message: 'Voucher này đã hết hạn.',
-      isValid: false,
-    }
-  }
-
-  if (
-    adminVoucher.requiresSilver &&
-    Number(user.points || 0) < SILVER_MIN_POINTS
-  ) {
-    return {
-      discount: 0,
-      message: 'Voucher này chỉ áp dụng cho thành viên Silver từ 50 điểm.',
-      isValid: false,
-    }
-  }
-
-  if (subtotal < Number(adminVoucher.minOrder || 0)) {
-    return {
-      discount: 0,
-      message: `Voucher áp dụng cho đơn từ ${formatPrice(
-        adminVoucher.minOrder,
-      )}.`,
-      isValid: false,
-    }
-  }
-
-  const rawDiscount =
-    adminVoucher.type === 'percent'
-      ? Math.round((subtotal * Number(adminVoucher.value || 0)) / 100)
-      : Number(adminVoucher.value || 0)
-
-  const maxDiscount = Number(adminVoucher.maxDiscount || 0)
-  const discount =
-    adminVoucher.type === 'percent' && maxDiscount > 0
-      ? Math.min(rawDiscount, maxDiscount, subtotal)
-      : Math.min(rawDiscount, subtotal)
-
+  if (!voucherCode) return { discount: 0, isValid: false, message: "" };
+  const result = applyVoucher(voucherCode, subtotal, user);
   return {
-    discount,
-    message: `Đã áp dụng voucher ${adminVoucher.code}.`,
-    isValid: true,
-  }
+    ...result,
+    isValid: result.ok,
+    isPersonalVoucher: !!result.voucher?.userId,
+  };
 }
 
 function CustomerCartPage() {
-  const navigate = useNavigate()
-  const user = getCurrentUser()
-  const [cart, setCart] = useState(getCart)
-  const [voucherCode, setVoucherCode] = useState(() =>
-    localStorage.getItem('blossom-selected-voucher') || '',
-  )
+  const navigate = useNavigate();
+  const user = getCurrentUser();
+  const [cart, setCart] = useState(getCart);
+  const [voucherCode, setVoucherCode] = useState(
+    () => store.getItem("blossom-selected-voucher") || "",
+  );
 
   const subtotal = useMemo(() => {
     return cart.reduce(
       (total, item) =>
         total + Number(item.price || 0) * Number(item.quantity || 0),
       0,
-    )
-  }, [cart])
+    );
+  }, [cart]);
 
   const voucherResult = useMemo(() => {
     if (!user) {
-      return { discount: 0, message: '', isValid: false }
+      return { discount: 0, message: "", isValid: false };
     }
 
-    return getVoucherResult({ voucherCode, user, subtotal })
-  }, [subtotal, user, voucherCode])
+    return getVoucherResult({ voucherCode, user, subtotal });
+  }, [subtotal, user, voucherCode]);
 
-  const discount = voucherResult.discount
-  const total = Math.max(subtotal - discount, 0)
+  const discount = voucherResult.discount;
+  const total = Math.max(subtotal - discount, 0);
   const cartCount = cart.reduce(
     (totalItem, item) => totalItem + Number(item.quantity || 0),
     0,
-  )
+  );
 
   if (!user) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login" replace />;
   }
 
-  const membershipLabel = getMembershipLabel(user.points)
+  const membershipLabel = getMembershipLabel(user.points);
 
   const initials = user.name
-    .split(' ')
+    .split(" ")
     .map((part) => part[0])
     .slice(-2)
-    .join('')
-    .toUpperCase()
+    .join("")
+    .toUpperCase();
 
   function saveCart(updatedCart) {
-    setCart(updatedCart)
-    localStorage.setItem('blossom-cart', JSON.stringify(updatedCart))
+    setCart(updatedCart);
+    store.setItem("blossom-cart", JSON.stringify(updatedCart));
   }
 
   function changeQuantity(cartId, amount) {
@@ -216,23 +101,23 @@ function CustomerCartPage() {
           ? { ...item, quantity: Number(item.quantity || 0) + amount }
           : item,
       )
-      .filter((item) => item.quantity > 0)
+      .filter((item) => item.quantity > 0);
 
-    saveCart(updatedCart)
+    saveCart(updatedCart);
   }
 
   function removeItem(cartId) {
-    saveCart(cart.filter((item) => item.cartId !== cartId))
+    saveCart(cart.filter((item) => item.cartId !== cartId));
   }
 
   function removeVoucher() {
-    localStorage.removeItem('blossom-selected-voucher')
-    setVoucherCode('')
+    store.removeItem("blossom-selected-voucher");
+    setVoucherCode("");
   }
 
-  function handleLogout() {
-    logoutUser()
-    navigate('/')
+  async function handleLogout() {
+    await logoutUser();
+    navigate("/");
   }
 
   return (
@@ -241,7 +126,7 @@ function CustomerCartPage() {
         <button
           className="bb-brand"
           type="button"
-          onClick={() => navigate('/customer')}
+          onClick={() => navigate("/customer")}
         >
           <span>B</span>
           Blossom Brew
@@ -252,7 +137,7 @@ function CustomerCartPage() {
         <nav className="bb-sidebar-nav">
           {navigationItems.map((item) => (
             <button
-              className={item.active ? 'bb-nav-item active' : 'bb-nav-item'}
+              className={item.active ? "bb-nav-item active" : "bb-nav-item"}
               key={item.label}
               type="button"
               onClick={() => navigate(item.to)}
@@ -287,7 +172,7 @@ function CustomerCartPage() {
             <button
               className="bb-cart-button"
               type="button"
-              onClick={() => navigate('/customer/cart')}
+              onClick={() => navigate("/customer/cart")}
             >
               Giỏ hàng <b>{cartCount}</b> · {formatPrice(subtotal)}
             </button>
@@ -316,7 +201,7 @@ function CustomerCartPage() {
               <button
                 className="primary-button"
                 type="button"
-                onClick={() => navigate('/customer/menu')}
+                onClick={() => navigate("/customer/menu")}
               >
                 ← Tiếp tục chọn món
               </button>
@@ -337,8 +222,8 @@ function CustomerCartPage() {
 
                       <small>
                         {item.toppings?.length
-                          ? `Topping: ${item.toppings.join(', ')}`
-                          : 'Không topping'}
+                          ? `Topping: ${item.toppings.join(", ")}`
+                          : "Không topping"}
                       </small>
 
                       {item.note && (
@@ -387,7 +272,7 @@ function CustomerCartPage() {
                 <button
                   className="bb-back-to-menu"
                   type="button"
-                  onClick={() => navigate('/customer/menu')}
+                  onClick={() => navigate("/customer/menu")}
                 >
                   ← Tiếp tục chọn món
                 </button>
@@ -409,8 +294,8 @@ function CustomerCartPage() {
                       <span
                         className={
                           voucherResult.isValid
-                            ? 'voucher-success'
-                            : 'field-error'
+                            ? "voucher-success"
+                            : "field-error"
                         }
                       >
                         {voucherResult.message}
@@ -425,7 +310,7 @@ function CustomerCartPage() {
                   <button
                     className="bb-choose-voucher"
                     type="button"
-                    onClick={() => navigate('/customer/points')}
+                    onClick={() => navigate("/customer/points")}
                   >
                     + Chọn voucher
                   </button>
@@ -444,7 +329,7 @@ function CustomerCartPage() {
                 <button
                   className="primary-button full-button"
                   type="button"
-                  onClick={() => navigate('/customer/checkout')}
+                  onClick={() => navigate("/customer/checkout")}
                 >
                   Tiến hành thanh toán
                 </button>
@@ -454,7 +339,7 @@ function CustomerCartPage() {
         </section>
       </main>
     </div>
-  )
+  );
 }
 
-export default CustomerCartPage
+export default CustomerCartPage;

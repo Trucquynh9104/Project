@@ -1,54 +1,62 @@
-import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { getProducts } from '../../services/menuService'
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getProductSizes, getProducts } from "../../services/menuService";
 
-const categories = ['Tất cả', 'Cà phê', 'Trà', 'Khác']
+const categories = ["Tất cả", "Cà phê", "Trà", "Khác"];
 
 const fallbackDescriptions = {
-  'Cold Brew Cam': 'Cold brew · Cam tươi · Đường mía',
-  'Latte Hoa Nhài': 'Espresso · Sữa tươi · Hoa nhài',
-  'Trà Đào Cam Sả': 'Trà đen · Đào · Cam',
-  'Matcha Latte': 'Matcha · Sữa tươi · Vị ngọt dịu',
-  'Chocolate Đá Xay': 'Chocolate · Sữa tươi · Đá xay',
-  Americano: 'Espresso · Hương vị đậm đà',
-}
+  "Cold Brew Cam": "Cold brew · Cam tươi · Đường mía",
+  "Latte Hoa Nhài": "Espresso · Sữa tươi · Hoa nhài",
+  "Trà Đào Cam Sả": "Trà đen · Đào · Cam",
+  "Matcha Latte": "Matcha · Sữa tươi · Vị ngọt dịu",
+  "Chocolate Đá Xay": "Chocolate · Sữa tươi · Đá xay",
+  Americano: "Espresso · Hương vị đậm đà",
+};
 
 function formatPrice(price) {
-  return `${Number(price || 0).toLocaleString('vi-VN')}đ`
+  return `${Number(price || 0).toLocaleString("vi-VN")}đ`;
 }
 
 function getProductDescription(product) {
-  return product.description || fallbackDescriptions[product.name] || product.category
+  return (
+    product.description ||
+    fallbackDescriptions[product.name] ||
+    product.category
+  );
 }
 
 function GuestMenu() {
-  const navigate = useNavigate()
-  const [activeCategory, setActiveCategory] = useState('Tất cả')
-  const [keyword, setKeyword] = useState('')
-  const [selectedProduct, setSelectedProduct] = useState(null)
-  const [products] = useState(() =>
-    getProducts().filter((product) => product.available),
-  )
+  const navigate = useNavigate();
+  const [activeCategory, setActiveCategory] = useState("Tất cả");
+  const [keyword, setKeyword] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [products] = useState(getProducts);
 
   const filteredProducts = useMemo(() => {
-    const normalizedKeyword = keyword.trim().toLowerCase()
+    const normalizedKeyword = keyword.trim().toLowerCase();
 
-    return products.filter((product) => {
-      const matchesCategory =
-        activeCategory === 'Tất cả' ||
-        product.category === activeCategory ||
-        (activeCategory === 'Khác' && product.category === 'Đá xay')
+    return products
+      .filter((product) => {
+        const matchesCategory =
+          activeCategory === "Tất cả" ||
+          product.category === activeCategory ||
+          (activeCategory === "Khác" && product.category === "Đá xay");
 
-      const matchesKeyword =
-        !normalizedKeyword ||
-        product.name.toLowerCase().includes(normalizedKeyword)
+        const matchesKeyword =
+          !normalizedKeyword ||
+          product.name.toLowerCase().includes(normalizedKeyword);
 
-      return matchesCategory && matchesKeyword
-    })
-  }, [activeCategory, keyword, products])
+        return product.available !== false && matchesCategory && matchesKeyword;
+      })
+      .sort(
+        (first, second) =>
+          Number(first.available === false) -
+          Number(second.available === false),
+      );
+  }, [activeCategory, keyword, products]);
 
   function scrollToMenu() {
-    document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' })
+    document.getElementById("menu")?.scrollIntoView({ behavior: "smooth" });
   }
 
   return (
@@ -64,7 +72,7 @@ function GuestMenu() {
             <button className="is-active" type="button" onClick={scrollToMenu}>
               Menu
             </button>
-            <button type="button" onClick={() => navigate('/login')}>
+            <button type="button" onClick={() => navigate("/notices")}>
               Thông báo
             </button>
           </nav>
@@ -73,14 +81,14 @@ function GuestMenu() {
             <button
               className="guest-login-button"
               type="button"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate("/login")}
             >
               Đăng nhập
             </button>
             <button
               className="guest-primary-button guest-register-button"
               type="button"
-              onClick={() => navigate('/register')}
+              onClick={() => navigate("/register")}
             >
               Đăng ký
             </button>
@@ -109,24 +117,20 @@ function GuestMenu() {
               <button
                 className="guest-outline-button"
                 type="button"
-                onClick={() => navigate('/register')}
+                onClick={() => navigate("/register")}
               >
                 Trở thành thành viên
               </button>
             </div>
           </div>
 
-          <div aria-hidden="true" className="guest-hero-art">
-            <span className="guest-hero-ring" />
-            <span className="guest-steam steam-one" />
-            <span className="guest-steam steam-two" />
-            <span className="guest-steam steam-three" />
-            <span className="guest-saucer" />
-            <span className="guest-cup">
-              <span>B</span>
-              <i />
-            </span>
-            <small>BLEND<br />2026</small>
+          <div className="guest-hero-art guest-photo-art">
+            <img
+              src="/coffee-hero.webp"
+              alt="Tách cà phê latte trong ánh nắng buổi sáng"
+              width="1448"
+              height="1086"
+            />
           </div>
         </section>
 
@@ -140,10 +144,13 @@ function GuestMenu() {
           </div>
 
           <div className="guest-menu-controls">
-            <div aria-label="Danh mục thức uống" className="guest-category-tabs">
+            <div
+              aria-label="Danh mục thức uống"
+              className="guest-category-tabs"
+            >
               {categories.map((category) => (
                 <button
-                  className={activeCategory === category ? 'is-active' : ''}
+                  className={activeCategory === category ? "is-active" : ""}
                   key={category}
                   type="button"
                   onClick={() => setActiveCategory(category)}
@@ -165,16 +172,23 @@ function GuestMenu() {
           <div className="guest-product-grid">
             {filteredProducts.map((product, index) => (
               <button
-                className="guest-product-card"
+                className={
+                  product.available
+                    ? "guest-product-card"
+                    : "guest-product-card is-unavailable"
+                }
+                disabled={!product.available}
                 key={product.id}
                 type="button"
                 onClick={() => setSelectedProduct(product)}
               >
                 <span className={`guest-product-art tone-${(index % 3) + 1}`}>
-                  <b>{String(index + 1).padStart(2, '0')}</b>
+                  <b>{String(index + 1).padStart(2, "0")}</b>
                   <i className="guest-card-ring" />
                   <i className="guest-mini-saucer" />
-                  <i className="guest-mini-cup"><em /></i>
+                  <i className="guest-mini-cup">
+                    <em />
+                  </i>
                 </span>
 
                 <span className="guest-product-copy">
@@ -182,6 +196,11 @@ function GuestMenu() {
                   <strong>{product.name}</strong>
                   <span>{getProductDescription(product)}</span>
                   <b>{formatPrice(product.price)}</b>
+                  {!product.available && (
+                    <em className="guest-product-unavailable">
+                      Không khả dụng
+                    </em>
+                  )}
                 </span>
               </button>
             ))}
@@ -216,19 +235,17 @@ function GuestMenu() {
             </p>
             <p className="modal-price">{formatPrice(selectedProduct.price)}</p>
 
-            <div className="size-row">
-              <span>Size M</span>
-              <strong>{formatPrice(selectedProduct.price)}</strong>
-            </div>
-            <div className="size-row">
-              <span>Size L</span>
-              <strong>{formatPrice(Number(selectedProduct.price) + 8000)}</strong>
-            </div>
+            {getProductSizes(selectedProduct).map((item) => (
+              <div className="size-row" key={item.size}>
+                <span>Size {item.size}</span>
+                <strong>{formatPrice(item.price)}</strong>
+              </div>
+            ))}
 
             <button
               className="primary-button full-button"
               type="button"
-              onClick={() => navigate('/register')}
+              onClick={() => navigate("/register")}
             >
               Đăng ký để đặt món
             </button>
@@ -236,7 +253,7 @@ function GuestMenu() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default GuestMenu
+export default GuestMenu;

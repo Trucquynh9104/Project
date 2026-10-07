@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local database, uploads and secrets
+.blossom/
+.env
+.env.*
+!.env.example

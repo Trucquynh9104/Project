@@ -1,0 +1,2 @@
+import {useEffect,useRef} from 'react'
+export default function Modal({title,children,onClose,busy}){const ref=useRef();useEffect(()=>{ref.current.showModal();return()=>ref.current?.close()},[]);return <dialog ref={ref} className="brew-modal" aria-label={title} onCancel={e=>{e.preventDefault();if(!busy)onClose()}} onClick={e=>{if(e.target===e.currentTarget&&!busy)onClose()}}><div className="brew-modal-heading"><h2>{title}</h2><button autoFocus disabled={busy} aria-label="Đóng" onClick={onClose}>×</button></div>{children}</dialog>}
